@@ -14,7 +14,7 @@ var gravity_multiplier = 1.0
 
 # UI references
 @onready var block_label = get_node("Camera2D/BlockLabel")
-@onready var powerup_menu = get_node("../PowerupMenu")  # Adjust path as needed
+@onready var powerup_menu = get_node("Camera2D/PowerupMenu")
 
 func _ready():
 	# Load your block scene

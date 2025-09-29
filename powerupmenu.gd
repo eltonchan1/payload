@@ -1,11 +1,11 @@
-extends Control
+extends CanvasLayer
 
 signal powerup_selected(powerup_type)
 
-@onready var speed_button = $Panel/VBoxContainer/SpeedButton
-@onready var jump_button = $Panel/VBoxContainer/JumpButton  
-@onready var gravity_button = $Panel/VBoxContainer/GravityButton
-@onready var blocks_button = $Panel/VBoxContainer/BlocksButton
+@onready var speed_button = $Control/Panel/VBoxContainer/SpeedButton
+@onready var jump_button = $Control/Panel/VBoxContainer/JumpButton  
+@onready var gravity_button = $Control/Panel/VBoxContainer/GravityButton
+@onready var blocks_button = $Control/Panel/VBoxContainer/BlocksButton
 
 func _ready():
 	# Hide menu initially
