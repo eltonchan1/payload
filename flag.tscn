@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://vwod1h2w5a2a"]
+
+[ext_resource type="Script" uid="uid://bdvfewdj52rbi" path="res://flag.gd" id="1_amn8n"]
+[ext_resource type="Texture2D" uid="uid://sr7ahm6nvp1n" path="res://icon.svg" id="2_ukulb"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ts4f7"]
+size = Vector2(128, 128)
+
+[node name="Area2D" type="Area2D" groups=["flags"]]
+script = ExtResource("1_amn8n")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(64, -64)
+shape = SubResource("RectangleShape2D_ts4f7")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(64, -64)
+texture = ExtResource("2_ukulb")

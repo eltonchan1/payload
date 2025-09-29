@@ -1,0 +1,39 @@
+[gd_scene load_steps=2 format=3 uid="uid://bo3k4x4ntq5u1"]
+
+[ext_resource type="Script" uid="uid://iiswlmhtrju6" path="res://powerupmenu.gd" id="1_hj2i6"]
+
+[node name="PowerupMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_hj2i6")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = -200.0
+offset_top = -152.0
+offset_right = 200.0
+offset_bottom = 148.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_top = 80.0
+offset_right = 400.0
+offset_bottom = 224.0
+
+[node name="SpeedButton" type="Button" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Speed Boost (+50%)"
+
+[node name="JumpButton" type="Button" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Jump Power (+30%)"
+
+[node name="GravityButton" type="Button" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Reduce Gravity"
+
+[node name="BlocksButton" type="Button" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "5 Extra Blocks"

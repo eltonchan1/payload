@@ -1,8 +1,10 @@
-[gd_scene load_steps=7 format=4 uid="uid://bbdat1xel152t"]
+[gd_scene load_steps=9 format=4 uid="uid://bbdat1xel152t"]
 
 [ext_resource type="Texture2D" uid="uid://sr7ahm6nvp1n" path="res://icon.svg" id="1_0xm2m"]
 [ext_resource type="Script" uid="uid://c0ykwxd3umo6a" path="res://player.gd" id="1_h2yge"]
 [ext_resource type="Texture2D" uid="uid://byvywdv6vfrxh" path="res://silver_grey.png" id="2_h2yge"]
+[ext_resource type="PackedScene" uid="uid://vwod1h2w5a2a" path="res://flag.tscn" id="4_lquwl"]
+[ext_resource type="PackedScene" uid="uid://bo3k4x4ntq5u1" path="res://powerupmenu.tscn" id="5_7mycd"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1bvp3"]
 size = Vector2(127, 127)
@@ -103,6 +105,21 @@ texture = ExtResource("1_0xm2m")
 [node name="Camera2D" type="Camera2D" parent="Player"]
 zoom = Vector2(0.6, 0.6)
 
+[node name="BlockLabel" type="Label" parent="Player/Camera2D"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 60.0
+offset_bottom = 43.0
+
+[node name="PowerupMenu" parent="Player/Camera2D" instance=ExtResource("5_7mycd")]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 56.0
+offset_bottom = 56.0
+
 [node name="TileMapLayer" type="TileMapLayer" parent="."]
-tile_map_data = PackedByteArray("AAAGAAMAAAACAAIAAAAGAAQAAAACAAIAAAAHAAQAAAACAAIAAAAIAAQAAAACAAIAAAAJAAQAAAACAAIAAAAKAAQAAAACAAIAAAAKAAMAAAACAAIAAAALAAMAAAACAAIAAAAEAAQAAAACAAIAAAADAAQAAAACAAIAAAACAAQAAAACAAIAAAABAAQAAAACAAIAAAAAAAUAAAACAAIAAAD//wUAAAACAAIAAAAFAAMAAAACAAIAAAA=")
+tile_map_data = PackedByteArray("AAAGAAMAAAACAAIAAAAGAAQAAAACAAIAAAAHAAQAAAACAAIAAAAIAAQAAAACAAIAAAAJAAQAAAACAAIAAAAKAAQAAAACAAIAAAAKAAMAAAACAAIAAAALAAMAAAACAAIAAAAEAAQAAAACAAIAAAADAAQAAAACAAIAAAACAAQAAAACAAIAAAABAAQAAAACAAIAAAAAAAUAAAACAAIAAAD//wUAAAACAAIAAAAFAAMAAAACAAIAAAAMAAMAAAACAAIAAAANAAMAAAACAAIAAAAOAAMAAAACAAIAAAAPAAMAAAACAAIAAAAPAAIAAAACAAIAAAAPAAEAAAACAAIAAAAPAAAAAAACAAIAAAAPAP//AAACAAIAAAAPAP7/AAACAAIAAAAQAP7/AAACAAIAAAARAP7/AAACAAIAAAARAP3/AAACAAIAAAASAP3/AAACAAIAAAASAPz/AAACAAIAAAASAPv/AAACAAIAAAATAPv/AAACAAIAAAATAPr/AAACAAIAAAATAPn/AAACAAIAAAAUAPn/AAACAAIAAAAUAPj/AAACAAIAAAAVAPj/AAACAAIAAAAVAPf/AAACAAIAAAAWAPf/AAACAAIAAAAWAPb/AAACAAIAAAAXAPb/AAACAAIAAAAYAPb/AAACAAIAAAAYAPX/AAACAAIAAAAZAPX/AAACAAIAAAAaAPX/AAACAAIAAAAbAPX/AAACAAIAAAAcAPX/AAACAAIAAAAdAPX/AAACAAIAAAA=")
 tile_set = SubResource("TileSet_7mycd")
+
+[node name="Flag" parent="." instance=ExtResource("4_lquwl")]
+position = Vector2(3392, -1408)
