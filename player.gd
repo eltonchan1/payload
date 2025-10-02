@@ -12,23 +12,73 @@ var speed_multiplier = 1.0
 var jump_multiplier = 1.0
 var gravity_multiplier = 1.0
 
-# UI references
-@onready var block_label = get_node("Camera2D/BlockLabel")
-@onready var powerup_menu = get_node("Camera2D/PowerupMenu")
+# UI references (will be set in _ready)
+var block_label: Label
+var powerup_menu: CanvasLayer
 
 func _ready():
 	# Load your block scene
 	block_scene = preload("res://Block.tscn")
 	
+	# Get starting blocks from LevelManager (persistent between levels)
+	if has_node("/root/LevelManager"):
+		blocks_remaining = get_node("/root/LevelManager").get_starting_blocks()
+		print("Starting with ", blocks_remaining, " blocks from LevelManager")
+	else:
+		blocks_remaining = 10  # Fallback if no LevelManager
+		print("No LevelManager found, starting with 10 blocks")
+	
 	# Setup the label with better visibility
+	# Try to find label in different possible locations
+	if has_node("../../UI/BlockLabel"):
+		block_label = get_node("../../UI/BlockLabel")
+	elif has_node("../UI/BlockLabel"):
+		block_label = get_node("../UI/BlockLabel")
+	
 	if block_label:
 		block_label.visible = true
-		block_label.position = Vector2(20, 20)
+		# Position in top-left corner
+		block_label.position = Vector2(10, 10)
+		# Set anchor to top-left
+		block_label.anchor_left = 0
+		block_label.anchor_top = 0
+		block_label.anchor_right = 0
+		block_label.anchor_bottom = 0
+		# Make text larger and white
 		block_label.add_theme_font_size_override("font_size", 32)
-		block_label.add_theme_color_override("font_color", Color.YELLOW)
+		block_label.add_theme_color_override("font_color", Color.WHITE)
+		# Add shadow for better readability
+		block_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+		block_label.add_theme_constant_override("shadow_offset_x", 2)
+		block_label.add_theme_constant_override("shadow_offset_y", 2)
 		print("Block label setup complete")
 	else:
-		print("ERROR: Block label not found at Camera2D/BlockLabel")
+		print("ERROR: Block label not found")
+	
+	# Connect to powerup menu - try multiple paths
+	var menu_paths = [
+		"../../UI/PowerupMenu",
+		"../UI/PowerupMenu",
+		"../../PowerupMenu",
+		"../PowerupMenu"
+	]
+	
+	for path in menu_paths:
+		if has_node(path):
+			powerup_menu = get_node(path)
+			print("Found powerup menu at: ", path)
+			break
+	
+	if powerup_menu:
+		if powerup_menu.has_signal("powerup_selected"):
+			powerup_menu.powerup_selected.connect(_on_powerup_selected)
+			print("Connected to powerup menu successfully")
+		else:
+			print("PowerupMenu doesn't have powerup_selected signal!")
+	else:
+		print("Warning: Powerup menu not found at any path")
+		print("Player parent: ", get_parent().name)
+		print("Player parent's parent: ", get_parent().get_parent().name if get_parent().get_parent() else "none")
 	
 	# Connect to powerup menu
 	if powerup_menu:
@@ -74,6 +124,10 @@ func spawn_falling_block():
 		var block = block_scene.instantiate()
 		block.global_position = global_position + Vector2(0, 64)
 		get_tree().current_scene.add_child(block)
+		
+		# Track blocks used in LevelManager
+		if has_node("/root/LevelManager"):
+			get_node("/root/LevelManager").blocks_used(1)
 
 func update_block_label():
 	if block_label:
