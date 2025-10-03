@@ -1,32 +1,51 @@
 extends Area2D
 
-signal flag_touched(blocks_to_add)
+# This is now a SHOP, not a flag that gives blocks
+var player_in_range = false
+var player_ref = null
 
 func _ready():
-	print("Flag created and ready")
+	print("Shop flag created and ready")
 	body_entered.connect(_on_body_entered)
+	body_exited.connect(_on_body_exited)
 	
 	# Make sure we're monitoring
 	monitoring = true
 	monitorable = true
 
+func _process(_delta):
+	# Press S to open shop when in range
+	if player_in_range and Input.is_action_just_pressed("shop_interact"):
+		open_shop()
+
 func _on_body_entered(body):
-	print("Something touched the flag: ", body.name)
+	print("Something near shop: ", body.name)
 	
-	# Check if it's the player by looking for blocks_remaining property
 	if "blocks_remaining" in body:
-		print("Player confirmed! Current blocks: ", body.blocks_remaining)
+		print("Player can now open shop - Press S")
+		player_in_range = true
+		player_ref = body
+
+func _on_body_exited(body):
+	if "blocks_remaining" in body:
+		player_in_range = false
+		player_ref = null
+
+func open_shop():
+	if player_ref:
+		# Try to find shop UI - check autoload first, then in scene
+		print("Looking for ShopUI...")
+		var shop_ui = get_node_or_null("/root/ShopUI")
+		if shop_ui:
+			print("Found ShopUI in autoload")
+		else:
+			print("ShopUI not in autoload, checking scene...")
+			shop_ui = get_tree().current_scene.get_node_or_null("UI/ShopUI")
+			if shop_ui:
+				print("Found ShopUI in scene")
 		
-		# Calculate bonus: 2 blocks for every 5 current blocks (minimum 2)
-		var current_blocks = body.blocks_remaining
-		var bonus_blocks = max(2, (current_blocks / 5) * 2)
-		
-		print("Giving player ", bonus_blocks, " bonus blocks")
-		
-		# Send signal
-		flag_touched.emit(bonus_blocks)
-		
-		# Disable this flag
-		visible = false
-		set_deferred("monitoring", false)
-		print("Flag disabled")
+		if shop_ui:
+			shop_ui.show_shop(player_ref)
+		else:
+			print("ERROR: ShopUI not found anywhere!")
+			print("Available autoloads: ", get_tree().root.get_children())

@@ -63,22 +63,32 @@ func _ready():
 		"../PowerupMenu"
 	]
 	
+	powerup_menu = null  # Reset first
 	for path in menu_paths:
 		if has_node(path):
 			powerup_menu = get_node(path)
 			print("Found powerup menu at: ", path)
 			break
 	
-	if powerup_menu:
-		if powerup_menu.has_signal("powerup_selected"):
+	# Connect to powerup menu
+	if powerup_menu and powerup_menu.has_signal("powerup_selected"):
+		# Check connection and only connect if not already connected
+		var connections = powerup_menu.powerup_selected.get_connections()
+		var already_connected = false
+		for connection in connections:
+			if connection["callable"].get_object() == self:
+				already_connected = true
+				break
+		
+		if not already_connected:
 			powerup_menu.powerup_selected.connect(_on_powerup_selected)
 			print("Connected to powerup menu successfully")
 		else:
-			print("PowerupMenu doesn't have powerup_selected signal!")
+			print("Powerup menu already connected (skipping)")
+	elif powerup_menu:
+		print("PowerupMenu doesn't have powerup_selected signal!")
 	else:
 		print("Warning: Powerup menu not found at any path")
-		print("Player parent: ", get_parent().name)
-		print("Player parent's parent: ", get_parent().get_parent().name if get_parent().get_parent() else "none")
 	
 	# Connect to powerup menu
 	if powerup_menu:
@@ -87,8 +97,8 @@ func _ready():
 	else:
 		print("Warning: Powerup menu not found")
 	
-	# Connect to flags (with delay to ensure all nodes are ready)
-	call_deferred("connect_to_flags")
+	# Connect to flags (removed - flags are now shops)
+	# call_deferred("connect_to_flags")
 	
 	# Update the label initially
 	update_block_label()
@@ -132,24 +142,13 @@ func spawn_falling_block():
 func update_block_label():
 	if block_label:
 		block_label.text = "Blocks: " + str(blocks_remaining)
-
-func connect_to_flags():
-	print("Searching for flags...")
-	var flags = get_tree().get_nodes_in_group("flags")
-	print("Found ", flags.size(), " flag(s)")
 	
-	for flag in flags:
-		print("Connecting to flag: ", flag.name)
-		flag.flag_touched.connect(_on_flag_touched)
+	# Also update shop UI if it's open
+	var shop_ui = get_tree().current_scene.get_node_or_null("UI/ShopUI")
+	if shop_ui and shop_ui.visible:
+		shop_ui.update_blocks_display()
 
-func _on_flag_touched(bonus_blocks):
-	print("Flag activated! Getting ", bonus_blocks, " bonus blocks")
-	blocks_remaining += bonus_blocks
-	update_block_label()
-	
-	# Show powerup menu
-	if powerup_menu:
-		powerup_menu.show_menu()
+# Removed connect_to_flags and _on_flag_touched - flags are now shops
 
 func _on_powerup_selected(powerup_type):
 	print("Selected powerup: ", powerup_type)

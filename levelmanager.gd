@@ -36,9 +36,15 @@ func _ready():
 # Call this when a level is completed
 func level_completed(remaining_blocks: int):
 	levels_completed += 1
-	player_blocks = remaining_blocks  # Save blocks for next level
+	
+	# Calculate bonus: 2 blocks for every 5 blocks remaining (minimum 2)
+	var bonus_blocks = max(2, (remaining_blocks / 5) * 2)
+	player_blocks = remaining_blocks + bonus_blocks
+	
 	print("Level completed! Total: ", levels_completed)
-	print("Player has ", remaining_blocks, " blocks remaining")
+	print("Player finished with ", remaining_blocks, " blocks")
+	print("Bonus: +", bonus_blocks, " blocks")
+	print("New total: ", player_blocks, " blocks")
 	
 	# Update stage based on progression
 	update_stage()

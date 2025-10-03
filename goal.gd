@@ -13,7 +13,10 @@ func _on_body_entered(body):
 		
 		# Get player's remaining blocks
 		var remaining_blocks = body.blocks_remaining
+		var bonus_blocks = max(2, (remaining_blocks / 5) * 2)
+		
 		print("Player finished with ", remaining_blocks, " blocks")
+		print("Bonus reward: +", bonus_blocks, " blocks!")
 		
 		# Visual feedback
 		animate_completion()
