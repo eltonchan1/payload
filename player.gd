@@ -17,13 +17,24 @@ var block_label: Label
 var powerup_menu: CanvasLayer
 
 func _ready():
+	# Add player to group so inventory can find it
+	add_to_group("player")
+	
 	# Load your block scene
 	block_scene = preload("res://Block.tscn")
 	
 	# Get starting blocks from LevelManager (persistent between levels)
 	if has_node("/root/LevelManager"):
-		blocks_remaining = get_node("/root/LevelManager").get_starting_blocks()
+		var level_manager = get_node("/root/LevelManager")
+		blocks_remaining = level_manager.get_starting_blocks()
+		
+		# Load powerups from previous levels
+		speed_multiplier = level_manager.get_speed_multiplier()
+		jump_multiplier = level_manager.get_jump_multiplier()
+		gravity_multiplier = level_manager.get_gravity_multiplier()
+		
 		print("Starting with ", blocks_remaining, " blocks from LevelManager")
+		print("Powerups loaded - Speed: ", speed_multiplier, "x, Jump: ", jump_multiplier, "x, Gravity: ", gravity_multiplier, "x")
 	else:
 		blocks_remaining = 10  # Fallback if no LevelManager
 		print("No LevelManager found, starting with 10 blocks")
@@ -70,25 +81,8 @@ func _ready():
 			print("Found powerup menu at: ", path)
 			break
 	
-	# Connect to powerup menu
-	if powerup_menu and powerup_menu.has_signal("powerup_selected"):
-		# Check connection and only connect if not already connected
-		var connections = powerup_menu.powerup_selected.get_connections()
-		var already_connected = false
-		for connection in connections:
-			if connection["callable"].get_object() == self:
-				already_connected = true
-				break
-		
-		if not already_connected:
-			powerup_menu.powerup_selected.connect(_on_powerup_selected)
-			print("Connected to powerup menu successfully")
-		else:
-			print("Powerup menu already connected (skipping)")
-	elif powerup_menu:
-		print("PowerupMenu doesn't have powerup_selected signal!")
-	else:
-		print("Warning: Powerup menu not found at any path")
+	# Connect to powerup menu (removed - using shop now)
+	# Leaving this commented out for reference
 	
 	# Connect to powerup menu
 	if powerup_menu:
@@ -143,8 +137,11 @@ func update_block_label():
 	if block_label:
 		block_label.text = "Blocks: " + str(blocks_remaining)
 	
-	# Also update shop UI if it's open
-	var shop_ui = get_tree().current_scene.get_node_or_null("UI/ShopUI")
+	# Also update shop UI if it's open (check autoload first)
+	var shop_ui = get_node_or_null("/root/ShopUI")
+	if not shop_ui:
+		shop_ui = get_tree().current_scene.get_node_or_null("UI/ShopUI")
+	
 	if shop_ui and shop_ui.visible:
 		shop_ui.update_blocks_display()
 

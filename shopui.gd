@@ -1,11 +1,19 @@
 extends CanvasLayer
 
 var player_ref = null
-var current_tab = 0  # 0=Gear, 1=Mystery, 2=Upgrades
+var current_tab = 0  # 0=Gear, 1=Armor, 2=Mystery, 3=Upgrades
 
 # References to UI elements
 var blocks_label
 var content_container
+
+# Armor items (equipment that shows in inventory)
+var armor_items = [
+	{"name": "Speed Helmet", "cost": 5, "slot": "head", "description": "Sleek helmet for speed"},
+	{"name": "Jump Boots", "cost": 5, "slot": "feet", "description": "Bouncy boots for jumping"},
+	{"name": "Light Chestplate", "cost": 6, "slot": "chest", "description": "Lightweight armor"},
+	{"name": "Agile Leggings", "cost": 4, "slot": "legs", "description": "Flexible leg protection"}
+]
 
 # Shop items data (easy to customize!)
 var gear_items = [
@@ -32,8 +40,14 @@ func _ready():
 	print("ShopUI ready")
 
 func _input(event):
-	if visible and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("shop_interact")):
-		hide_shop()
+	if visible:
+		# Check for ESC or S to close
+		if event.is_action_pressed("ui_cancel"):
+			hide_shop()
+			get_viewport().set_input_as_handled()
+		elif event is InputEventKey and event.pressed and event.keycode == KEY_S and not event.echo:
+			hide_shop()
+			get_viewport().set_input_as_handled()
 
 func build_shop_ui():
 	# Create main container
@@ -77,21 +91,27 @@ func build_shop_ui():
 	tab_bar.add_theme_constant_override("separation", 5)
 	
 	var gear_btn = Button.new()
-	gear_btn.text = "Gear & Powerups"
-	gear_btn.custom_minimum_size = Vector2(200, 40)
+	gear_btn.text = "Powerups"
+	gear_btn.custom_minimum_size = Vector2(150, 40)
 	gear_btn.pressed.connect(func(): switch_tab(0))
 	tab_bar.add_child(gear_btn)
 	
+	var armor_btn = Button.new()
+	armor_btn.text = "Armor"
+	armor_btn.custom_minimum_size = Vector2(150, 40)
+	armor_btn.pressed.connect(func(): switch_tab(1))
+	tab_bar.add_child(armor_btn)
+	
 	var mystery_btn = Button.new()
-	mystery_btn.text = "Mystery Packs"
-	mystery_btn.custom_minimum_size = Vector2(200, 40)
-	mystery_btn.pressed.connect(func(): switch_tab(1))
+	mystery_btn.text = "Mystery"
+	mystery_btn.custom_minimum_size = Vector2(150, 40)
+	mystery_btn.pressed.connect(func(): switch_tab(2))
 	tab_bar.add_child(mystery_btn)
 	
 	var upgrade_btn = Button.new()
 	upgrade_btn.text = "Upgrades"
-	upgrade_btn.custom_minimum_size = Vector2(200, 40)
-	upgrade_btn.pressed.connect(func(): switch_tab(2))
+	upgrade_btn.custom_minimum_size = Vector2(150, 40)
+	upgrade_btn.pressed.connect(func(): switch_tab(3))
 	tab_bar.add_child(upgrade_btn)
 	
 	main_vbox.add_child(tab_bar)
@@ -119,7 +139,10 @@ func show_shop(player):
 
 func hide_shop():
 	visible = false
-	get_tree().paused = false
+	# Only unpause if inventory is not open
+	var inventory_ui = get_node_or_null("/root/InventoryUI")
+	if not inventory_ui or not inventory_ui.visible:
+		get_tree().paused = false
 	print("Shop closed")
 
 func update_blocks_display():
@@ -144,15 +167,19 @@ func populate_current_tab():
 	# Add items based on current tab
 	var items_added = 0
 	match current_tab:
-		0:  # Gear
+		0:  # Gear/Powerups
 			for item in gear_items:
 				content_container.add_child(create_shop_card(item, "gear"))
 				items_added += 1
-		1:  # Mystery
+		1:  # Armor
+			for item in armor_items:
+				content_container.add_child(create_shop_card(item, "armor"))
+				items_added += 1
+		2:  # Mystery
 			for pack in mystery_packs:
 				content_container.add_child(create_shop_card(pack, "mystery"))
 				items_added += 1
-		2:  # Upgrades
+		3:  # Upgrades
 			for upgrade in upgrade_items:
 				content_container.add_child(create_shop_card(upgrade, "upgrade"))
 				items_added += 1
@@ -225,6 +252,8 @@ func apply_item_effect(item_data, item_type):
 	match item_type:
 		"gear":
 			apply_gear_effect(item_data)
+		"armor":
+			apply_armor_effect(item_data)
 		"mystery":
 			open_mystery_pack(item_data)
 		"upgrade":
@@ -238,17 +267,30 @@ func apply_gear_effect(item_data):
 		"speed":
 			player_ref.speed_multiplier += 0.5
 			print("→ Speed increased to ", player_ref.speed_multiplier, "x")
+			save_powerups_to_manager()
 		"jump":
 			player_ref.jump_multiplier += 0.3
 			print("→ Jump power increased to ", player_ref.jump_multiplier, "x")
+			save_powerups_to_manager()
 		"gravity":
 			player_ref.gravity_multiplier -= 0.3
 			print("→ Gravity reduced to ", player_ref.gravity_multiplier, "x")
+			save_powerups_to_manager()
 		"blocks":
 			player_ref.blocks_remaining += 5
 			player_ref.update_block_label()
 			update_blocks_display()
 			print("→ Got 5 bonus blocks!")
+
+func save_powerups_to_manager():
+	# Save powerups to LevelManager so they persist
+	var level_manager = player_ref.get_node_or_null("/root/LevelManager")
+	if level_manager:
+		level_manager.save_powerups(
+			player_ref.speed_multiplier,
+			player_ref.jump_multiplier,
+			player_ref.gravity_multiplier
+		)
 
 func open_mystery_pack(pack_data):
 	var num_items = randi_range(1, 3) if pack_data["name"] == "Common Pack" else randi_range(2, 4)
@@ -262,3 +304,16 @@ func open_mystery_pack(pack_data):
 func apply_upgrade(upgrade_data):
 	print("→ Applied upgrade: ", upgrade_data["name"])
 	# TODO: Implement specific upgrade effects
+
+func apply_armor_effect(item_data):
+	print("→ Equipped: ", item_data["name"], " to slot: ", item_data["slot"])
+	
+	# Add armor to inventory
+	var inventory = get_node_or_null("/root/InventoryUI")
+	print("Looking for inventory... found: ", inventory != null)
+	
+	if inventory:
+		print("Calling equip_item on inventory")
+		inventory.equip_item(item_data["slot"], item_data)
+	else:
+		print("Warning: Inventory not found at /root/InventoryUI")

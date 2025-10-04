@@ -6,6 +6,11 @@ var levels_completed = 0
 var total_blocks_used = 0
 var player_blocks = 10  # Track blocks between levels
 
+# Track powerups between levels
+var player_speed_multiplier = 1.0
+var player_jump_multiplier = 1.0
+var player_gravity_multiplier = 1.0
+
 # Define level paths for each stage
 var level_pools = {
 	"early": [
@@ -37,14 +42,23 @@ func _ready():
 func level_completed(remaining_blocks: int):
 	levels_completed += 1
 	
-	# Calculate bonus: 2 blocks for every 5 blocks remaining (minimum 2)
-	var bonus_blocks = max(2, (remaining_blocks / 5) * 2)
+	# Calculate interest: 2 blocks for every 5 blocks remaining
+	var interest = (remaining_blocks / 5) * 2
+	
+	# Minimum guaranteed blocks: 5
+	var bonus_blocks = max(5, interest)
+	
 	player_blocks = remaining_blocks + bonus_blocks
 	
-	print("Level completed! Total: ", levels_completed)
-	print("Player finished with ", remaining_blocks, " blocks")
-	print("Bonus: +", bonus_blocks, " blocks")
-	print("New total: ", player_blocks, " blocks")
+	print("━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	print("Level ", levels_completed, " completed!")
+	print("Blocks remaining: ", remaining_blocks)
+	print("Interest earned: +", interest, " blocks")
+	if interest < 5:
+		print("Minimum bonus applied: +", 5 - interest, " blocks")
+	print("Total bonus: +", bonus_blocks, " blocks")
+	print("Next level blocks: ", player_blocks)
+	print("━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	
 	# Update stage based on progression
 	update_stage()
@@ -90,10 +104,30 @@ func get_current_stage() -> String:
 func get_starting_blocks() -> int:
 	return player_blocks
 
+# Get powerup multipliers (call from player when spawning)
+func get_speed_multiplier() -> float:
+	return player_speed_multiplier
+
+func get_jump_multiplier() -> float:
+	return player_jump_multiplier
+
+func get_gravity_multiplier() -> float:
+	return player_gravity_multiplier
+
+# Save powerup multipliers (call from player when they change)
+func save_powerups(speed: float, jump: float, gravity: float):
+	player_speed_multiplier = speed
+	player_jump_multiplier = jump
+	player_gravity_multiplier = gravity
+	print("Powerups saved - Speed: ", speed, "x, Jump: ", jump, "x, Gravity: ", gravity, "x")
+
 # Reset game (for starting new game)
 func reset_game():
 	levels_completed = 0
 	total_blocks_used = 0
 	player_blocks = 10
 	current_stage = "early"
+	player_speed_multiplier = 1.0
+	player_jump_multiplier = 1.0
+	player_gravity_multiplier = 1.0
 	print("Game reset")
