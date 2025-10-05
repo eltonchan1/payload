@@ -262,25 +262,47 @@ func apply_item_effect(item_data, item_type):
 func apply_gear_effect(item_data):
 	if not player_ref:
 		return
-		
+	
+	var old_value = 0.0
+	var new_value = 0.0
+	var stat_name = ""
+	
 	match item_data["effect"]:
 		"speed":
+			old_value = player_ref.speed_multiplier
 			player_ref.speed_multiplier += 0.5
+			new_value = player_ref.speed_multiplier
+			stat_name = "speed"
 			print("→ Speed increased to ", player_ref.speed_multiplier, "x")
 			save_powerups_to_manager()
 		"jump":
+			old_value = player_ref.jump_multiplier
 			player_ref.jump_multiplier += 0.3
+			new_value = player_ref.jump_multiplier
+			stat_name = "jump"
 			print("→ Jump power increased to ", player_ref.jump_multiplier, "x")
 			save_powerups_to_manager()
 		"gravity":
+			old_value = player_ref.gravity_multiplier
 			player_ref.gravity_multiplier -= 0.3
+			new_value = player_ref.gravity_multiplier
+			stat_name = "gravity"
 			print("→ Gravity reduced to ", player_ref.gravity_multiplier, "x")
 			save_powerups_to_manager()
 		"blocks":
+			old_value = float(player_ref.blocks_remaining)
 			player_ref.blocks_remaining += 5
+			new_value = float(player_ref.blocks_remaining)
+			stat_name = "blocks"
 			player_ref.update_block_label()
 			update_blocks_display()
 			print("→ Got 5 bonus blocks!")
+	
+	# Animate the stat change on HUD
+	if stat_name != "":
+		var stat_notif = get_node_or_null("/root/StatNotification")
+		if stat_notif:
+			stat_notif.animate_stat_change(stat_name, old_value, new_value)
 
 func save_powerups_to_manager():
 	# Save powerups to LevelManager so they persist
@@ -307,6 +329,44 @@ func apply_upgrade(upgrade_data):
 
 func apply_armor_effect(item_data):
 	print("→ Equipped: ", item_data["name"], " to slot: ", item_data["slot"])
+	
+	# Apply stat bonus from armor
+	if item_data.has("bonus_type") and item_data.has("bonus_value"):
+		var bonus_type = item_data["bonus_type"]
+		var bonus_value = item_data["bonus_value"]
+		
+		var old_value = 0.0
+		var new_value = 0.0
+		var stat_name = ""
+		
+		match bonus_type:
+			"speed":
+				old_value = player_ref.speed_multiplier
+				player_ref.speed_multiplier += bonus_value
+				new_value = player_ref.speed_multiplier
+				stat_name = "speed"
+				print("  + Speed bonus: ", bonus_value, " (new total: ", player_ref.speed_multiplier, "x)")
+			"jump":
+				old_value = player_ref.jump_multiplier
+				player_ref.jump_multiplier += bonus_value
+				new_value = player_ref.jump_multiplier
+				stat_name = "jump"
+				print("  + Jump bonus: ", bonus_value, " (new total: ", player_ref.jump_multiplier, "x)")
+			"gravity":
+				old_value = player_ref.gravity_multiplier
+				player_ref.gravity_multiplier += bonus_value  # negative value = less gravity
+				new_value = player_ref.gravity_multiplier
+				stat_name = "gravity"
+				print("  + Gravity bonus: ", bonus_value, " (new total: ", player_ref.gravity_multiplier, "x)")
+		
+		# Animate stat change on HUD
+		if stat_name != "":
+			var stat_notif = get_node_or_null("/root/StatNotification")
+			if stat_notif:
+				stat_notif.animate_stat_change(stat_name, old_value, new_value)
+		
+		# Save powerups to persist between levels
+		save_powerups_to_manager()
 	
 	# Add armor to inventory
 	var inventory = get_node_or_null("/root/InventoryUI")

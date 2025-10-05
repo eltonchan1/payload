@@ -43,7 +43,7 @@ func level_completed(remaining_blocks: int):
 	levels_completed += 1
 	
 	# Calculate interest: 2 blocks for every 5 blocks remaining
-	var interest = (remaining_blocks / 5) * 2
+	var interest = int(remaining_blocks / 5.0) * 2
 	
 	# Minimum guaranteed blocks: 5
 	var bonus_blocks = max(5, interest)
