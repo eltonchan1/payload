@@ -24,8 +24,12 @@ func _on_play_pressed():
 	get_tree().change_scene_to_file("res://levels/early_1.tscn")
 
 func _on_settings_pressed():
-	print("Settings not implemented yet")
-	# TODO: Open settings menu
+	print("Opening settings from main menu...")
+	var settings = get_node_or_null("/root/SettingsMenu")
+	if settings:
+		settings.show_settings()
+	else:
+		print("SettingsMenu not found!")
 
 func _on_quit_pressed():
 	print("Quitting game...")

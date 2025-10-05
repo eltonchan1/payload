@@ -9,17 +9,17 @@ var content_container
 
 # Armor items (equipment that shows in inventory)
 var armor_items = [
-	{"name": "Speed Helmet", "cost": 5, "slot": "head", "description": "Sleek helmet for speed"},
-	{"name": "Jump Boots", "cost": 5, "slot": "feet", "description": "Bouncy boots for jumping"},
-	{"name": "Light Chestplate", "cost": 6, "slot": "chest", "description": "Lightweight armor"},
-	{"name": "Agile Leggings", "cost": 4, "slot": "legs", "description": "Flexible leg protection"}
+	{"name": "Speed Helmet", "cost": 5, "slot": "head", "description": "Sleek helmet for speed", "bonus_type": "speed", "bonus_value": 0.3},
+	{"name": "Jump Boots", "cost": 5, "slot": "feet", "description": "Bouncy boots for jumping", "bonus_type": "jump", "bonus_value": 0.2},
+	{"name": "Light Chestplate", "cost": 6, "slot": "chest", "description": "Lightweight armor", "bonus_type": "gravity", "bonus_value": -0.2},
+	{"name": "Agile Leggings", "cost": 4, "slot": "legs", "description": "Flexible leg protection", "bonus_type": "speed", "bonus_value": 0.2}
 ]
 
 # Shop items data (easy to customize!)
 var gear_items = [
-	{"name": "Speed Boots", "cost": 3, "description": "Increase movement speed by 50%", "effect": "speed"},
-	{"name": "Jump Jets", "cost": 4, "description": "Jump 30% higher", "effect": "jump"},
-	{"name": "Feather", "cost": 3, "description": "Reduce gravity by 30%", "effect": "gravity"},
+	{"name": "Speed Potion", "cost": 3, "description": "Increase movement speed by 50%", "effect": "speed"},
+	{"name": "Jump Elixir", "cost": 4, "description": "Jump 30% higher", "effect": "jump"},
+	{"name": "Feather Charm", "cost": 3, "description": "Reduce gravity by 30%", "effect": "gravity"},
 	{"name": "Block Pack", "cost": 2, "description": "Gain 5 extra blocks", "effect": "blocks"}
 ]
 

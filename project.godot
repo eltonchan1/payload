@@ -20,6 +20,8 @@ config/icon="res://icon.svg"
 LevelManager="*res://LevelManager.gd"
 ShopUI="*res://shopui.tscn"
 InventoryUI="*res://inventoryui.tscn"
+PauseMenu="*res://pausemenu.tscn"
+SettingsMenu="*res://settingsmenu.tscn"
 
 [editor_plugins]
 
