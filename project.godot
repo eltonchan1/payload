@@ -22,7 +22,7 @@ ShopUI="*res://shopui.tscn"
 InventoryUI="*res://inventoryui.tscn"
 PauseMenu="*res://pausemenu.tscn"
 SettingsMenu="*res://settingsmenu.tscn"
-StatNotification="*res://statnotification.tscn"
+StatNotifications="*res://statnotifications.tscn"
 
 [editor_plugins]
 

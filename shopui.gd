@@ -237,11 +237,15 @@ func purchase_item(item_data, item_type):
 	var cost = item_data["cost"]
 	
 	if player_ref.blocks_remaining >= cost:
+		var old_blocks = player_ref.blocks_remaining
 		player_ref.blocks_remaining -= cost
 		player_ref.update_block_label()  # Update player's label too
 		update_blocks_display()
 		
-		# Apply the effect
+		# Don't show purchase notification - only stat changes
+		# apply_item_effect will show the stat changes
+		
+		# Apply the effect (this will show stat changes)
 		apply_item_effect(item_data, item_type)
 		
 		print("✓ Purchased: ", item_data["name"])
@@ -263,46 +267,38 @@ func apply_gear_effect(item_data):
 	if not player_ref:
 		return
 	
-	var old_value = 0.0
-	var new_value = 0.0
-	var stat_name = ""
-	
+	var stat_notif = get_node_or_null("/root/StatNotifications")
+		
 	match item_data["effect"]:
 		"speed":
-			old_value = player_ref.speed_multiplier
+			var old_speed = player_ref.speed_multiplier
 			player_ref.speed_multiplier += 0.5
-			new_value = player_ref.speed_multiplier
-			stat_name = "speed"
+			if stat_notif:
+				stat_notif.show_stat_change("Speed", old_speed, player_ref.speed_multiplier, Color.CYAN)
 			print("→ Speed increased to ", player_ref.speed_multiplier, "x")
 			save_powerups_to_manager()
 		"jump":
-			old_value = player_ref.jump_multiplier
+			var old_jump = player_ref.jump_multiplier
 			player_ref.jump_multiplier += 0.3
-			new_value = player_ref.jump_multiplier
-			stat_name = "jump"
+			if stat_notif:
+				stat_notif.show_stat_change("Jump", old_jump, player_ref.jump_multiplier, Color.LIGHT_GREEN)
 			print("→ Jump power increased to ", player_ref.jump_multiplier, "x")
 			save_powerups_to_manager()
 		"gravity":
-			old_value = player_ref.gravity_multiplier
+			var old_gravity = player_ref.gravity_multiplier
 			player_ref.gravity_multiplier -= 0.3
-			new_value = player_ref.gravity_multiplier
-			stat_name = "gravity"
+			if stat_notif:
+				stat_notif.show_stat_change("Gravity", old_gravity, player_ref.gravity_multiplier, Color.LIGHT_BLUE)
 			print("→ Gravity reduced to ", player_ref.gravity_multiplier, "x")
 			save_powerups_to_manager()
 		"blocks":
-			old_value = float(player_ref.blocks_remaining)
+			var old_blocks = player_ref.blocks_remaining
 			player_ref.blocks_remaining += 5
-			new_value = float(player_ref.blocks_remaining)
-			stat_name = "blocks"
 			player_ref.update_block_label()
 			update_blocks_display()
+			if stat_notif:
+				stat_notif.show_blocks_change(old_blocks, player_ref.blocks_remaining)
 			print("→ Got 5 bonus blocks!")
-	
-	# Animate the stat change on HUD
-	if stat_name != "":
-		var stat_notif = get_node_or_null("/root/StatNotification")
-		if stat_notif:
-			stat_notif.animate_stat_change(stat_name, old_value, new_value)
 
 func save_powerups_to_manager():
 	# Save powerups to LevelManager so they persist
@@ -330,40 +326,32 @@ func apply_upgrade(upgrade_data):
 func apply_armor_effect(item_data):
 	print("→ Equipped: ", item_data["name"], " to slot: ", item_data["slot"])
 	
+	var stat_notif = get_node_or_null("/root/StatNotifications")
+	
 	# Apply stat bonus from armor
 	if item_data.has("bonus_type") and item_data.has("bonus_value"):
 		var bonus_type = item_data["bonus_type"]
 		var bonus_value = item_data["bonus_value"]
 		
-		var old_value = 0.0
-		var new_value = 0.0
-		var stat_name = ""
-		
 		match bonus_type:
 			"speed":
-				old_value = player_ref.speed_multiplier
+				var old_speed = player_ref.speed_multiplier
 				player_ref.speed_multiplier += bonus_value
-				new_value = player_ref.speed_multiplier
-				stat_name = "speed"
+				if stat_notif:
+					stat_notif.show_stat_change("Speed", old_speed, player_ref.speed_multiplier, Color.STEEL_BLUE)
 				print("  + Speed bonus: ", bonus_value, " (new total: ", player_ref.speed_multiplier, "x)")
 			"jump":
-				old_value = player_ref.jump_multiplier
+				var old_jump = player_ref.jump_multiplier
 				player_ref.jump_multiplier += bonus_value
-				new_value = player_ref.jump_multiplier
-				stat_name = "jump"
+				if stat_notif:
+					stat_notif.show_stat_change("Jump", old_jump, player_ref.jump_multiplier, Color.STEEL_BLUE)
 				print("  + Jump bonus: ", bonus_value, " (new total: ", player_ref.jump_multiplier, "x)")
 			"gravity":
-				old_value = player_ref.gravity_multiplier
+				var old_gravity = player_ref.gravity_multiplier
 				player_ref.gravity_multiplier += bonus_value  # negative value = less gravity
-				new_value = player_ref.gravity_multiplier
-				stat_name = "gravity"
+				if stat_notif:
+					stat_notif.show_stat_change("Gravity", old_gravity, player_ref.gravity_multiplier, Color.STEEL_BLUE)
 				print("  + Gravity bonus: ", bonus_value, " (new total: ", player_ref.gravity_multiplier, "x)")
-		
-		# Animate stat change on HUD
-		if stat_name != "":
-			var stat_notif = get_node_or_null("/root/StatNotification")
-			if stat_notif:
-				stat_notif.animate_stat_change(stat_name, old_value, new_value)
 		
 		# Save powerups to persist between levels
 		save_powerups_to_manager()
