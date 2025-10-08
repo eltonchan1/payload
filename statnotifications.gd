@@ -65,9 +65,8 @@ func format_stat_value(stat_name: String, value: float) -> String:
 func animate_notification(notification: Label):
 	var tween = create_tween()
 	
-	# Phase 1: Fade in and slide down (0.3s)
+	# Phase 1: Fade in (0.3s) - don't slide, just fade
 	tween.tween_property(notification, "modulate:a", 1.0, 0.3)
-	tween.parallel().tween_property(notification, "position:y", 10, 0.3).from(0)
 	
 	# Phase 2: Stay visible (1.5s)
 	tween.tween_interval(1.5)

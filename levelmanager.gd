@@ -5,11 +5,15 @@ var current_stage = "early"  # early, middle, late
 var levels_completed = 0
 var total_blocks_used = 0
 var player_blocks = 10  # Track blocks between levels
+var last_level_played = ""  # Track to prevent immediate repeats
 
 # Track powerups between levels
 var player_speed_multiplier = 1.0
 var player_jump_multiplier = 1.0
 var player_gravity_multiplier = 1.0
+
+# Win condition
+const ROUNDS_TO_WIN = 10  # Change this to adjust win condition
 
 # Define level paths for each stage
 var level_pools = {
@@ -43,7 +47,7 @@ func level_completed(remaining_blocks: int):
 	levels_completed += 1
 	
 	# Calculate interest: 2 blocks for every 5 blocks remaining
-	var interest = int(remaining_blocks / 5.0) * 2
+	var interest = (remaining_blocks / 5) * 2
 	
 	# Minimum guaranteed blocks: 5
 	var bonus_blocks = max(5, interest)
@@ -79,18 +83,42 @@ func update_stage():
 
 # Load a random level from current stage pool
 func load_next_level():
+	# Check if won
+	if levels_completed >= ROUNDS_TO_WIN:
+		show_win_screen()
+		return
+	
 	var available_levels = level_pools[current_stage]
 	
 	if available_levels.size() == 0:
 		print("No levels available for stage: ", current_stage)
 		return
 	
-	# Pick random level from pool
-	var random_index = randi() % available_levels.size()
-	var level_path = available_levels[random_index]
+	if available_levels.size() == 1:
+		# Only one level, have to use it
+		var level_path = available_levels[0]
+		last_level_played = level_path
+		print("Loading level (only option): ", level_path)
+		get_tree().change_scene_to_file(level_path)
+		return
 	
-	print("Loading level: ", level_path)
+	# Multiple levels - pick one that's NOT the last played
+	var filtered_levels = []
+	for level_path in available_levels:
+		if level_path != last_level_played:
+			filtered_levels.append(level_path)
+	
+	# Pick random from filtered list
+	var random_index = randi() % filtered_levels.size()
+	var level_path = filtered_levels[random_index]
+	last_level_played = level_path
+	
+	print("Loading level: ", level_path, " (last was: ", last_level_played.get_file(), ")")
 	get_tree().change_scene_to_file(level_path)
+
+func show_win_screen():
+	print("YOU WIN! Loading win screen...")
+	get_tree().change_scene_to_file("res://WinScreen.tscn")
 
 # Track blocks used (call from player)
 func blocks_used(amount: int):
