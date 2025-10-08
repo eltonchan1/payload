@@ -49,17 +49,19 @@ func level_completed(remaining_blocks: int):
 	# Calculate interest: 2 blocks for every 5 blocks remaining
 	var interest = (remaining_blocks / 5) * 2
 	
-	# Minimum guaranteed blocks: 5
-	var bonus_blocks = max(5, interest)
+	# Add base reward for completing level: 5 blocks
+	var completion_bonus = 5
+	
+	# Total bonus
+	var bonus_blocks = interest + completion_bonus
 	
 	player_blocks = remaining_blocks + bonus_blocks
 	
 	print("━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	print("Level ", levels_completed, " completed!")
 	print("Blocks remaining: ", remaining_blocks)
-	print("Interest earned: +", interest, " blocks")
-	if interest < 5:
-		print("Minimum bonus applied: +", 5 - interest, " blocks")
+	print("Interest (2 per 5): +", interest, " blocks")
+	print("Completion bonus: +", completion_bonus, " blocks")
 	print("Total bonus: +", bonus_blocks, " blocks")
 	print("Next level blocks: ", player_blocks)
 	print("━━━━━━━━━━━━━━━━━━━━━━━━━━")

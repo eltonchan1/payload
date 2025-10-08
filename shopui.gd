@@ -363,10 +363,13 @@ func apply_upgrade(upgrade_data):
 	# TODO: Implement specific upgrade effects
 
 func randomize_shop_inventory():
-	print("Randomizing shop for new level...")
+	print("Randomizing shop...")
 	
-	# Clear temporary purchases for new level
+	# Clear all sold out status (fresh start)
 	purchased_items.clear()
+	
+	# Check if gravity is maxed
+	var gravity_maxed = player_ref and player_ref.gravity_multiplier <= 0.1
 	
 	# Get player's equipped armor to exclude from shop
 	var inventory = get_node_or_null("/root/InventoryUI")
@@ -381,27 +384,35 @@ func randomize_shop_inventory():
 		if inventory.feet_item:
 			equipped_slots.append(inventory.feet_item.get("name", ""))
 	
-	# Randomize gear (2 items)
-	current_gear_shop = get_random_items(gear_items, 2)
+	# Filter gear - remove gravity items if maxed
+	var available_gear = []
+	for item in gear_items:
+		if gravity_maxed and item.get("effect") == "gravity":
+			continue  # Skip gravity items
+		available_gear.append(item)
+	current_gear_shop = get_random_items(available_gear, 2)
 	
-	# Randomize armor (2 items, exclude equipped)
+	# Filter armor - exclude equipped and gravity bonus if maxed
 	var available_armor = []
 	for armor in armor_items:
-		if not equipped_slots.has(armor.get("name", "")):
-			available_armor.append(armor)
+		if equipped_slots.has(armor.get("name", "")):
+			continue  # Skip equipped armor
+		if gravity_maxed and armor.get("bonus_type") == "gravity":
+			continue  # Skip gravity armor
+		available_armor.append(armor)
 	current_armor_shop = get_random_items(available_armor, 2)
 	
 	# Randomize mystery (2 items)
 	current_mystery_shop = get_random_items(mystery_packs, 2)
 	
-	# Randomize upgrades (2 items, exclude already purchased)
+	# Randomize upgrades (2 items, exclude permanently purchased)
 	var available_upgrades = []
 	for upgrade in upgrade_items:
 		if not purchased_upgrades.has(upgrade.get("name", "")):
 			available_upgrades.append(upgrade)
 	current_upgrade_shop = get_random_items(available_upgrades, 2)
 	
-	print("Shop inventory randomized")
+	print("Shop inventory randomized (Gravity maxed: ", gravity_maxed, ")")
 
 func get_random_items(source_array: Array, count: int) -> Array:
 	var result = []
