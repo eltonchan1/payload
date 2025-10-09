@@ -3,6 +3,7 @@ extends Area2D
 # This is now a SHOP, not a flag that gives blocks
 var player_in_range = false
 var player_ref = null
+var can_toggle_shop = true  # Cooldown to prevent instant reopen
 
 func _ready():
 	print("Shop flag created and ready")
@@ -16,7 +17,14 @@ func _ready():
 func _process(_delta):
 	# Press S to open shop when in range
 	if player_in_range and Input.is_action_just_pressed("shop_interact"):
-		open_shop()
+		# Check if shop is already open
+		var shop_ui = get_tree().current_scene.get_node_or_null("UI/ShopUI")
+		if not shop_ui:
+			shop_ui = get_node_or_null("/root/ShopUI")
+		
+		# Only open if shop is currently closed
+		if shop_ui and not shop_ui.visible:
+			open_shop()
 
 func _on_body_entered(body):
 	print("Something near shop: ", body.name)

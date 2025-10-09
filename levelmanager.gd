@@ -104,18 +104,17 @@ func load_next_level():
 		get_tree().change_scene_to_file(level_path)
 		return
 	
-	# Multiple levels - pick one that's NOT the last played
-	var filtered_levels = []
-	for level_path in available_levels:
-		if level_path != last_level_played:
-			filtered_levels.append(level_path)
+	# Multiple levels - keep randomizing until we get a different one
+	var level_path = last_level_played
+	var attempts = 0
+	while level_path == last_level_played and attempts < 100:
+		var random_index = randi() % available_levels.size()
+		level_path = available_levels[random_index]
+		attempts += 1
 	
-	# Pick random from filtered list
-	var random_index = randi() % filtered_levels.size()
-	var level_path = filtered_levels[random_index]
 	last_level_played = level_path
 	
-	print("Loading level: ", level_path, " (last was: ", last_level_played.get_file(), ")")
+	print("Loading level: ", level_path, " (different from last)")
 	get_tree().change_scene_to_file(level_path)
 
 func show_win_screen():
