@@ -15,16 +15,27 @@ func _ready():
 	monitorable = true
 
 func _process(_delta):
-	# Press S to open shop when in range
-	if player_in_range and Input.is_action_just_pressed("shop_interact"):
-		# Check if shop is already open
-		var shop_ui = get_tree().current_scene.get_node_or_null("UI/ShopUI")
-		if not shop_ui:
-			shop_ui = get_node_or_null("/root/ShopUI")
+	if not player_in_range or not can_toggle_shop:
+		return
+	
+	# Check for S key press
+	if Input.is_action_just_pressed("shop_interact"):
+		var shop_ui = get_node_or_null("/root/ShopUI")
 		
-		# Only open if shop is currently closed
-		if shop_ui and not shop_ui.visible:
-			open_shop()
+		if shop_ui:
+			if shop_ui.visible:
+				# Shop is open - let the shop's _input handle closing
+				print("Shop is open, flag ignoring input")
+				return
+			else:
+				# Shop is closed - open it
+				print("Flag opening shop")
+				open_shop()
+				
+				# Cooldown to prevent rapid toggling
+				can_toggle_shop = false
+				await get_tree().create_timer(0.3).timeout
+				can_toggle_shop = true
 
 func _on_body_entered(body):
 	print("Something near shop: ", body.name)

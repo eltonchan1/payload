@@ -58,14 +58,21 @@ func _ready():
 	print("ShopUI ready")
 
 func _input(event):
-	if visible:
-		# Check for ESC to close
-		if event.is_action_pressed("ui_cancel"):
-			hide_shop()
-			get_viewport().set_input_as_handled()
-			return
-		# Check for shop_interact action (S key) to close
-		if event.is_action_pressed("shop_interact"):
+	# Only process if shop is visible
+	if not visible:
+		return
+	
+	# Check for ESC to close
+	if event.is_action_pressed("ui_cancel"):
+		print("ESC pressed - closing shop")
+		hide_shop()
+		get_viewport().set_input_as_handled()
+		return
+	
+	# Check for S key to close
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_S:
+			print("S key pressed in shop - closing")
 			hide_shop()
 			get_viewport().set_input_as_handled()
 			return
