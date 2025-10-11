@@ -18,9 +18,6 @@ func _on_body_entered(body):
 		print("Player finished with ", remaining_blocks, " blocks")
 		print("Bonus reward: +", bonus_blocks, " blocks!")
 		
-		# Visual feedback
-		animate_completion()
-		
 		# Wait a moment before loading next level
 		await get_tree().create_timer(1.0).timeout
 		
@@ -29,10 +26,3 @@ func _on_body_entered(body):
 			get_node("/root/LevelManager").level_completed(remaining_blocks)
 		else:
 			print("LevelManager not found!")
-
-func animate_completion():
-	# Simple pulse animation
-	if sprite:
-		var tween = create_tween()
-		tween.tween_property(sprite, "scale", Vector2(1.5, 1.5), 0.3)
-		tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.3)

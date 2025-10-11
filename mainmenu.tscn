@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://clq6dcox4urlb"]
+[gd_scene load_steps=3 format=3 uid="uid://clq6dcox4urlb"]
 
 [ext_resource type="Script" uid="uid://7ysfxj4t1lfm" path="res://mainmenu.gd" id="1_cmhrf"]
+[ext_resource type="Texture2D" uid="uid://de6pwk11ooh0u" path="res://snowdin.jpg" id="2_d2nv2"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -10,6 +11,11 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_cmhrf")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(560.00006, 400.00003)
+scale = Vector2(2.310056, 2.310056)
+texture = ExtResource("2_d2nv2")
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1

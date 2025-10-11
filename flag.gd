@@ -1,9 +1,9 @@
 extends Area2D
 
-# This is now a SHOP, not a flag that gives blocks
 var player_in_range = false
 var player_ref = null
 var can_toggle_shop = true  # Cooldown to prevent instant reopen
+var prompt_label: Label = null  # The "S" prompt above player
 
 func _ready():
 	print("Shop flag created and ready")
@@ -13,6 +13,9 @@ func _ready():
 	# Make sure we're monitoring
 	monitoring = true
 	monitorable = true
+	
+	# Create the prompt label (hidden initially)
+	create_prompt_label()
 
 func _process(_delta):
 	if not player_in_range or not can_toggle_shop:
@@ -44,27 +47,44 @@ func _on_body_entered(body):
 		print("Player can now open shop - Press S")
 		player_in_range = true
 		player_ref = body
+		show_prompt()
 
 func _on_body_exited(body):
 	if "blocks_remaining" in body:
 		player_in_range = false
 		player_ref = null
+		hide_prompt()
 
 func open_shop():
 	if player_ref:
-		# Try to find shop UI - check autoload first, then in scene
-		print("Looking for ShopUI...")
+		# Find and open shop UI
 		var shop_ui = get_node_or_null("/root/ShopUI")
-		if shop_ui:
-			print("Found ShopUI in autoload")
-		else:
-			print("ShopUI not in autoload, checking scene...")
-			shop_ui = get_tree().current_scene.get_node_or_null("UI/ShopUI")
-			if shop_ui:
-				print("Found ShopUI in scene")
-		
 		if shop_ui:
 			shop_ui.show_shop(player_ref)
 		else:
-			print("ERROR: ShopUI not found anywhere!")
-			print("Available autoloads: ", get_tree().root.get_children())
+			print("ShopUI not found anywhere!")
+
+func create_prompt_label():
+	prompt_label = Label.new()
+	prompt_label.text = "S"
+	prompt_label.add_theme_font_size_override("font_size", 100)
+	prompt_label.add_theme_color_override("font_color", Color.WHITE)
+	
+	# Add background/outline for visibility
+	prompt_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	prompt_label.add_theme_constant_override("outline_size", 4)
+	
+	# Add to scene
+	add_child(prompt_label)
+	
+	# Position above the flag (adjust as needed)
+	prompt_label.position = Vector2(100, -400)  # Centered and above
+	prompt_label.visible = false
+
+func show_prompt():
+	if prompt_label and player_ref:
+		prompt_label.visible = true
+
+func hide_prompt():
+	if prompt_label:
+		prompt_label.visible = false

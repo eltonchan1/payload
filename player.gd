@@ -3,6 +3,15 @@ extends CharacterBody2D
 const SPEED = 750.0
 const JUMP_VELOCITY = -1500.0
 
+# Platformer feel improvements
+const JUMP_BUFFER_TIME = 0.15  # How long to remember jump input
+const COYOTE_TIME = 0.15  # How long you can jump after leaving ground
+const LEDGE_PUSH_DISTANCE = 10.0  # How far to push off ledges
+
+var jump_buffer_timer = 0.0
+var coyote_timer = 0.0
+var was_on_floor = false
+
 # Block spawning variables
 var block_scene: PackedScene
 var blocks_remaining = 10
@@ -14,7 +23,7 @@ var gravity_multiplier = 1.0
 
 # UI references (will be set in _ready)
 var block_label: Label
-var powerup_menu: CanvasLayer
+# powerup_menu removed - now using shop system
 
 func _ready():
 	# Add player to group so inventory can find it
@@ -47,55 +56,11 @@ func _ready():
 		block_label = get_node("../UI/BlockLabel")
 	
 	if block_label:
-		block_label.visible = true
-		# Position in top-left corner
-		block_label.position = Vector2(10, 10)
-		# Set anchor to top-left
-		block_label.anchor_left = 0
-		block_label.anchor_top = 0
-		block_label.anchor_right = 0
-		block_label.anchor_bottom = 0
-		# Make text larger and white
-		block_label.add_theme_font_size_override("font_size", 32)
-		block_label.add_theme_color_override("font_color", Color.WHITE)
-		# Add shadow for better readability
-		block_label.add_theme_color_override("font_shadow_color", Color.BLACK)
-		block_label.add_theme_constant_override("shadow_offset_x", 2)
-		block_label.add_theme_constant_override("shadow_offset_y", 2)
-		print("Block label setup complete")
+		# Convert Label to HBoxContainer with icon + text
+		setup_block_counter_with_icon()
+		print("Block label setup complete with icon")
 	else:
 		print("ERROR: Block label not found")
-	
-	# Connect to powerup menu - try multiple paths
-	var menu_paths = [
-		"../../UI/PowerupMenu",
-		"../UI/PowerupMenu",
-		"../../PowerupMenu",
-		"../PowerupMenu"
-	]
-	
-	powerup_menu = null  # Reset first
-	for path in menu_paths:
-		if has_node(path):
-			powerup_menu = get_node(path)
-			print("Found powerup menu at: ", path)
-			break
-	
-	# Connect to powerup menu (removed - using shop now)
-	# Leaving this commented out for reference
-	
-	# Connect to powerup menu
-	if powerup_menu:
-		powerup_menu.powerup_selected.connect(_on_powerup_selected)
-		print("Connected to powerup menu")
-	else:
-		print("Warning: Powerup menu not found")
-	
-	# Connect to flags (removed - flags are now shops)
-	# call_deferred("connect_to_flags")
-	
-	# Update the label initially
-	update_block_label()
 
 func _physics_process(delta: float) -> void:
 	# Add gravity with multiplier
@@ -135,7 +100,7 @@ func spawn_falling_block():
 
 func update_block_label():
 	if block_label:
-		block_label.text = "Blocks: " + str(blocks_remaining)
+		block_label.text = str(blocks_remaining)  # Just the number now
 	
 	# Also update shop UI if it's open (check autoload first)
 	var shop_ui = get_node_or_null("/root/ShopUI")
@@ -144,6 +109,51 @@ func update_block_label():
 	
 	if shop_ui and shop_ui.visible:
 		shop_ui.update_blocks_display()
+
+func setup_block_counter_with_icon():
+	# Create an HBoxContainer to hold icon + number
+	var parent = block_label.get_parent()
+	
+	var container = HBoxContainer.new()
+	container.position = Vector2(10, 10)
+	container.add_theme_constant_override("separation", 10)
+	
+	# Create icon (TextureRect)
+	var icon = TextureRect.new()
+	icon.custom_minimum_size = Vector2(32, 32)
+	icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	
+	# Load your block sprite (CHANGE THIS PATH to your actual block image)
+	var block_texture = load("res://sprites/block.png")  # ← Change this!
+	
+	if block_texture:
+		icon.texture = block_texture
+	else:
+		# Fallback: Create a simple colored square
+		var fallback = ColorRect.new()
+		fallback.custom_minimum_size = Vector2(32, 32)
+		fallback.color = Color.ORANGE_RED
+		container.add_child(fallback)
+		print("Warning: Block icon not found at res://sprites/block_icon.png, using fallback")
+	
+	if icon.texture:
+		container.add_child(icon)
+	
+	# Remove old label and add container
+	parent.remove_child(block_label)
+	parent.add_child(container)
+	
+	# Re-setup the label with better styling
+	block_label.text = str(blocks_remaining)
+	block_label.add_theme_font_size_override("font_size", 32)
+	block_label.add_theme_color_override("font_color", Color.WHITE)
+	block_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	block_label.add_theme_constant_override("shadow_offset_x", 2)
+	block_label.add_theme_constant_override("shadow_offset_y", 2)
+	block_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	
+	container.add_child(block_label)
 
 # Removed connect_to_flags and _on_flag_touched - flags are now shops
 

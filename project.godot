@@ -13,7 +13,7 @@ config_version=5
 config/name="payload"
 run/main_scene="uid://clq6dcox4urlb"
 config/features=PackedStringArray("4.5", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://images/icon.svg"
 
 [autoload]
 
@@ -27,6 +27,10 @@ StatNotifications="*res://statnotifications.tscn"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/godot_super-wakatime/plugin.cfg")
+
+[gui]
+
+theme/custom_font="uid://c460r47y00o44"
 
 [input]
 
