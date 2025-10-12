@@ -45,8 +45,8 @@ var mystery_packs = [
 ]
 
 var upgrade_items = [
-	{"name": "Bulk Discount", "cost": 10, "description": "All items cost 1 less", "effect": "discount"},
-	{"name": "Extra Shop Slot", "cost": 15, "description": "Get 1 more item per shop category", "effect": "extra_slot"}
+	{"name": "Bulk Discount", "cost": 10, "description": "All items cost 1 less (permanent)", "effect": "discount"},
+	{"name": "Extra Shop Slot", "cost": 15, "description": "Get 1 more item per shop category (permanent)", "effect": "extra_slot"}
 ]
 
 # Voucher effects tracking
@@ -256,7 +256,16 @@ func create_shop_card(item_data, item_type):
 	
 	var bottom_hbox = HBoxContainer.new()
 	var cost_label = Label.new()
-	cost_label.text = "Cost: " + str(item_data.get("cost", 0)) + " blocks"
+	
+	# Apply discount if active
+	var final_cost = item_data.get("cost", 0)
+	if discount_active and final_cost > 0:
+		final_cost = max(0, final_cost - 1)  # Reduce by 1, minimum 0
+		cost_label.text = "Cost: " + str(final_cost) + " blocks (discounted!)"
+		cost_label.add_theme_color_override("font_color", Color.LIGHT_GREEN)
+	else:
+		cost_label.text = "Cost: " + str(final_cost) + " blocks"
+	
 	cost_label.add_theme_font_size_override("font_size", 16)
 	bottom_hbox.add_child(cost_label)
 	
@@ -280,11 +289,16 @@ func purchase_item(item_data, item_type):
 		print("ERROR: No player reference!")
 		return
 	
-	var cost = item_data["cost"]
+	# Calculate final cost with discount
+	var base_cost = item_data["cost"]
+	var final_cost = base_cost
+	if discount_active and base_cost > 0:
+		final_cost = max(0, base_cost - 1)
+	
 	var item_name = item_data.get("name", "Unknown")
 	
-	if player_ref.blocks_remaining >= cost:
-		player_ref.blocks_remaining -= cost
+	if player_ref.blocks_remaining >= final_cost:
+		player_ref.blocks_remaining -= final_cost
 		player_ref.update_block_label()
 		update_blocks_display()
 		
@@ -296,9 +310,9 @@ func purchase_item(item_data, item_type):
 		apply_item_effect(item_data, item_type)
 		populate_current_tab()
 		
-		print("✓ Purchased: ", item_data["name"])
+		print("✓ Purchased: ", item_data["name"], " for ", final_cost, " blocks")
 	else:
-		print("✗ Not enough blocks! Need ", cost, " but have ", player_ref.blocks_remaining)
+		print("✗ Not enough blocks! Need ", final_cost, " but have ", player_ref.blocks_remaining)
 
 func apply_item_effect(item_data, item_type):
 	match item_type:
@@ -434,6 +448,27 @@ func open_mystery_pack(pack_data):
 
 func apply_upgrade(upgrade_data):
 	print("→ Applied upgrade: ", upgrade_data["name"])
+	
+	var stat_notif = get_node_or_null("/root/StatNotifications")
+	
+	match upgrade_data["effect"]:
+		"discount":
+			discount_active = true
+			if stat_notif:
+				stat_notif.show_notification("Bulk Discount Active!", "All items -1 block", Color.GOLD)
+			print("  ✓ Bulk Discount activated! All items cost 1 less")
+			# Refresh current tab to show discounted prices
+			populate_current_tab()
+			
+		"extra_slot":
+			extra_shop_slots += 1
+			items_per_category = 2 + extra_shop_slots
+			if stat_notif:
+				stat_notif.show_notification("Extra Shop Slot!", "Now showing " + str(items_per_category) + " items per category", Color.GOLD)
+			print("  ✓ Extra shop slot purchased! Now ", items_per_category, " items per category")
+			# Re-randomize to show more items
+			randomize_shop_inventory()
+			populate_current_tab()
 
 func save_powerups_to_manager():
 	var level_manager = player_ref.get_node_or_null("/root/LevelManager")
@@ -463,12 +498,15 @@ func randomize_shop_inventory():
 		if inventory.feet_item:
 			equipped_slots.append(inventory.feet_item.get("name", ""))
 	
+	# Use items_per_category which includes extra slots
+	var num_items = items_per_category
+	
 	var available_gear = []
 	for item in gear_items:
 		if gravity_maxed and item.get("effect") == "gravity":
 			continue
 		available_gear.append(item)
-	current_gear_shop = get_random_items(available_gear, 2)
+	current_gear_shop = get_random_items(available_gear, num_items)
 	
 	var available_armor = []
 	for armor in armor_items:
@@ -477,17 +515,17 @@ func randomize_shop_inventory():
 		if gravity_maxed and armor.get("bonus_type") == "gravity":
 			continue
 		available_armor.append(armor)
-	current_armor_shop = get_random_items(available_armor, 2)
+	current_armor_shop = get_random_items(available_armor, num_items)
 	
-	current_mystery_shop = get_random_items(mystery_packs, 2)
+	current_mystery_shop = get_random_items(mystery_packs, num_items)
 	
 	var available_upgrades = []
 	for upgrade in upgrade_items:
 		if not purchased_upgrades.has(upgrade.get("name", "")):
 			available_upgrades.append(upgrade)
-	current_upgrade_shop = get_random_items(available_upgrades, 2)
+	current_upgrade_shop = get_random_items(available_upgrades, num_items)
 	
-	print("Shop inventory randomized (Gravity maxed: ", gravity_maxed, ")")
+	print("Shop inventory randomized (Items per category: ", num_items, ", Gravity maxed: ", gravity_maxed, ")")
 
 func get_random_items(source_array: Array, count: int) -> Array:
 	var result = []

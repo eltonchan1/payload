@@ -49,11 +49,19 @@ func build_win_screen():
 	var rounds_label = Label.new()
 	rounds_label.name = "RoundsLabel"
 	rounds_label.text = "Completed 10 Rounds!"
-	rounds_label.text = "Now try to do it without any upgrades..."
 	rounds_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rounds_label.add_theme_font_size_override("font_size", 32)
 	rounds_label.add_theme_color_override("font_color", Color.WHITE)
 	vbox.add_child(rounds_label)
+	
+	# Challenge text
+	var challenge_label = Label.new()
+	challenge_label.name = "ChallengeLabel"
+	challenge_label.text = ""
+	challenge_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	challenge_label.add_theme_font_size_override("font_size", 28)
+	challenge_label.add_theme_color_override("font_color", Color.LIGHT_GRAY)
+	vbox.add_child(challenge_label)
 	
 	# Spacer
 	var spacer1 = Control.new()
@@ -68,11 +76,14 @@ func build_win_screen():
 	stats_title.add_theme_color_override("font_color", Color.YELLOW)
 	vbox.add_child(stats_title)
 	
-	# Stats container
+	# Stats container - centered
+	var stats_center = CenterContainer.new()
+	vbox.add_child(stats_center)
+	
 	var stats_container = VBoxContainer.new()
 	stats_container.name = "StatsContainer"
 	stats_container.add_theme_constant_override("separation", 15)
-	vbox.add_child(stats_container)
+	stats_center.add_child(stats_container)
 	
 	# Create stat labels
 	var speed_label = create_stat_label("Speed", "1.0x")
@@ -124,10 +135,23 @@ func create_stat_label(stat_name: String, default_value: String) -> HBoxContaine
 	return hbox
 
 func display_stats(level_manager):
+	# Check if any upgrades were purchased
+	var used_upgrades = (level_manager.player_speed_multiplier != 1.0 or 
+						 level_manager.player_jump_multiplier != 1.0 or 
+						 level_manager.player_gravity_multiplier != 1.0)
+	
 	# Update rounds
 	var rounds_label = get_node_or_null("CenterContainer/VBoxContainer/RoundsLabel")
 	if rounds_label:
 		rounds_label.text = "Completed " + str(level_manager.levels_completed) + " Rounds!"
+	
+	# Update challenge text
+	var challenge_label = find_node_recursive(self, "ChallengeLabel")
+	if challenge_label:
+		if used_upgrades:
+			challenge_label.text = "now try to win without buying anything..."
+		else:
+			challenge_label.text = "wow pro gaming"
 	
 	# Update stats - search for nodes recursively
 	var speed_value = find_node_recursive(self, "SpeedLabel")
