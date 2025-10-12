@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bepde4g7j11db"
+path="res://.godot/imported/ROBLOX Button Sound Effect - Game Tips-[AudioTrimmer.com].mp3-4d56cc814478af471a3274507b298a66.mp3str"
+
+[deps]
+
+source_file="res://levels/ROBLOX Button Sound Effect - Game Tips-[AudioTrimmer.com].mp3"
+dest_files=["res://.godot/imported/ROBLOX Button Sound Effect - Game Tips-[AudioTrimmer.com].mp3-4d56cc814478af471a3274507b298a66.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

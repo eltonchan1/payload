@@ -13,7 +13,7 @@ var player_jump_multiplier = 1.0
 var player_gravity_multiplier = 1.0
 
 # Win condition
-const ROUNDS_TO_WIN = 10  # Change this to adjust win condition
+const ROUNDS_TO_WIN = 20  # Change this to adjust win condition
 
 # Define level paths for each stage
 var level_pools = {
@@ -30,13 +30,14 @@ var level_pools = {
 	"late": [
 		"res://levels/late_1.tscn",
 		"res://levels/late_2.tscn",
-		"res://levels/late_3.tscn"
+		"res://levels/late_3.tscn",
+		"res://levels/late_4.tscn"
 	]
 }
 
 # Thresholds for stage progression
 const MIDDLE_STAGE_THRESHOLD = 3  # After 3 levels, enter middle stage
-const LATE_STAGE_THRESHOLD = 7    # After 7 levels, enter late stage
+const LATE_STAGE_THRESHOLD = 5    # After 5 levels, enter late stage
 
 func _ready():
 	print("LevelManager ready")
@@ -47,10 +48,10 @@ func level_completed(remaining_blocks: int):
 	levels_completed += 1
 	
 	# Calculate interest: 2 blocks for every 5 blocks remaining
-	var interest = (remaining_blocks / 5) * 2
+	var interest = (remaining_blocks / 5)
 	
 	# Add base reward for completing level: 5 blocks
-	var completion_bonus = 5
+	var completion_bonus = 3
 	
 	# Total bonus
 	var bonus_blocks = interest + completion_bonus
@@ -60,7 +61,7 @@ func level_completed(remaining_blocks: int):
 	print("━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	print("Level ", levels_completed, " completed!")
 	print("Blocks remaining: ", remaining_blocks)
-	print("Interest (2 per 5): +", interest, " blocks")
+	print("Interest (1 per 5): +", interest, " blocks")
 	print("Completion bonus: +", completion_bonus, " blocks")
 	print("Total bonus: +", bonus_blocks, " blocks")
 	print("Next level blocks: ", player_blocks)

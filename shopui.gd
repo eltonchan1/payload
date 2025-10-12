@@ -1,7 +1,5 @@
 extends CanvasLayer
 
-signal item_purchased(item_type, item_data)
-
 var player_ref = null
 var current_tab = 0  # 0=Gear, 1=Armor, 2=Mystery, 3=Upgrades
 
@@ -25,10 +23,10 @@ var purchased_upgrades = []  # Permanent (stay sold out forever)
 # Format: {"name": "Item Name", "cost": 5, "description": "What it does", "effect": "speed/jump/gravity/blocks"}
 
 var gear_items = [
-	{"name": "Speed Potion", "cost": 3, "description": "Increase movement speed by 50%", "effect": "speed"},
-	{"name": "Jump Elixir", "cost": 4, "description": "Jump 30% higher", "effect": "jump"},
-	{"name": "Feather Charm", "cost": 3, "description": "Reduce gravity by 30%", "effect": "gravity"},
-	{"name": "Block Pack", "cost": 2, "description": "Gain 5 extra blocks", "effect": "blocks"}
+	{"name": "Speed Potion", "cost": 3, "description": "Increase movement speed by 30%", "effect": "speed"},
+	{"name": "Jump Elixir", "cost": 4, "description": "Jump 20% higher", "effect": "jump"},
+	{"name": "Feather Charm", "cost": 3, "description": "Reduce gravity by 10%", "effect": "gravity"},
+	{"name": "Giveaway", "cost": 0, "description": "Gain 5 extra blocks", "effect": "blocks"}
 ]
 
 # Armor items - add bonus_type and bonus_value for stat bonuses
@@ -42,14 +40,19 @@ var armor_items = [
 ]
 
 var mystery_packs = [
-	{"name": "Common Pack", "cost": 5, "description": "Contains 1-3 random items"},
-	{"name": "Rare Pack", "cost": 8, "description": "Contains 2-4 random items"}
+	{"name": "Common Pack", "cost": 6, "description": "Contains 1-3 random items"},
+	{"name": "Rare Pack", "cost": 10, "description": "Contains 2-4 random items"}
 ]
 
 var upgrade_items = [
-	{"name": "Bulk Discount", "cost": 10, "description": "All items cost 1 less"},
-	{"name": "Extra Jump", "cost": 15, "description": "Gain bonus air jump"}
+	{"name": "Bulk Discount", "cost": 10, "description": "All items cost 1 less", "effect": "discount"},
+	{"name": "Extra Shop Slot", "cost": 15, "description": "Get 1 more item per shop category", "effect": "extra_slot"}
 ]
+
+# Voucher effects tracking
+var discount_active = false  # Bulk discount voucher
+var extra_shop_slots = 0  # Extra slot voucher
+var items_per_category = 2  # Base amount
 
 func _ready():
 	visible = false
@@ -97,7 +100,6 @@ func show_shop(player):
 		print("SAME LEVEL (count unchanged) - Using existing shop inventory")
 	
 	visible = true
-	get_tree().paused = true
 	update_blocks_display()
 	switch_tab(0)
 	print("Shop opened - Player has ", player.blocks_remaining, " blocks")
@@ -282,7 +284,6 @@ func purchase_item(item_data, item_type):
 	var item_name = item_data.get("name", "Unknown")
 	
 	if player_ref.blocks_remaining >= cost:
-		var old_blocks = player_ref.blocks_remaining
 		player_ref.blocks_remaining -= cost
 		player_ref.update_block_label()
 		update_blocks_display()
@@ -319,23 +320,23 @@ func apply_gear_effect(item_data):
 	match item_data["effect"]:
 		"speed":
 			var old_speed = player_ref.speed_multiplier
-			player_ref.speed_multiplier += 0.5
+			player_ref.speed_multiplier += 0.3
 			if stat_notif:
 				stat_notif.show_stat_change("Speed", old_speed, player_ref.speed_multiplier, Color.CYAN)
 			print("→ Speed increased to ", player_ref.speed_multiplier, "x")
 			save_powerups_to_manager()
 		"jump":
 			var old_jump = player_ref.jump_multiplier
-			player_ref.jump_multiplier += 0.3
+			player_ref.jump_multiplier += 0.2
 			if stat_notif:
 				stat_notif.show_stat_change("Jump", old_jump, player_ref.jump_multiplier, Color.LIGHT_GREEN)
 			print("→ Jump power increased to ", player_ref.jump_multiplier, "x")
 			save_powerups_to_manager()
 		"gravity":
 			var old_gravity = player_ref.gravity_multiplier
-			player_ref.gravity_multiplier -= 0.3
-			if player_ref.gravity_multiplier < 0.1:
-				player_ref.gravity_multiplier = 0.1
+			player_ref.gravity_multiplier -= 0.1
+			if player_ref.gravity_multiplier < 0.5:
+				player_ref.gravity_multiplier = 0.5
 			if stat_notif:
 				stat_notif.show_stat_change("Gravity", old_gravity, player_ref.gravity_multiplier, Color.LIGHT_BLUE)
 			print("→ Gravity reduced to ", player_ref.gravity_multiplier, "x")

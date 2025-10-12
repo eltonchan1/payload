@@ -161,16 +161,26 @@ func _on_slider_changed(setting_name: String, value: float):
 	if value_label:
 		value_label.text = str(int(value))
 	
-	# Update setting
+	# Update setting and apply to audio buses
 	match setting_name:
 		"master_volume":
 			master_volume = int(value)
-			print("Master volume: ", master_volume)
+			var db = linear_to_db(value / 100.0)
+			AudioServer.set_bus_volume_db(0, db)  # Master bus is index 0
+			print("Master volume: ", master_volume, " (", db, " dB)")
 		"sfx_volume":
 			sfx_volume = int(value)
+			var sfx_bus = AudioServer.get_bus_index("SFX")
+			if sfx_bus != -1:
+				var db = linear_to_db(value / 100.0)
+				AudioServer.set_bus_volume_db(sfx_bus, db)
 			print("SFX volume: ", sfx_volume)
 		"music_volume":
 			music_volume = int(value)
+			var music_bus = AudioServer.get_bus_index("Music")
+			if music_bus != -1:
+				var db = linear_to_db(value / 100.0)
+				AudioServer.set_bus_volume_db(music_bus, db)
 			print("Music volume: ", music_volume)
 
 # Helper function to find node by name recursively

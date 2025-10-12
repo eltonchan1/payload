@@ -21,24 +21,27 @@ func _process(_delta):
 	if not player_in_range or not can_toggle_shop:
 		return
 	
-	# Check for S key press
+	# Check for S key press using the action
 	if Input.is_action_just_pressed("shop_interact"):
 		var shop_ui = get_node_or_null("/root/ShopUI")
 		
-		if shop_ui:
-			if shop_ui.visible:
-				# Shop is open - let the shop's _input handle closing
-				print("Shop is open, flag ignoring input")
-				return
-			else:
-				# Shop is closed - open it
-				print("Flag opening shop")
-				open_shop()
-				
-				# Cooldown to prevent rapid toggling
-				can_toggle_shop = false
-				await get_tree().create_timer(0.3).timeout
-				can_toggle_shop = true
+		if not shop_ui:
+			print("ERROR: ShopUI not found!")
+			return
+		
+		if shop_ui.visible:
+			# Shop is open - don't do anything, let shop handle closing
+			print("Shop already open, flag ignoring input")
+			return
+		else:
+			# Shop is closed - open it
+			print("Flag opening shop")
+			open_shop()
+			
+			# Cooldown to prevent rapid toggling
+			can_toggle_shop = false
+			await get_tree().create_timer(0.3).timeout
+			can_toggle_shop = true
 
 func _on_body_entered(body):
 	print("Something near shop: ", body.name)

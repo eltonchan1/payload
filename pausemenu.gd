@@ -49,13 +49,11 @@ func toggle_pause():
 func pause_game():
 	is_paused = true
 	visible = true
-	get_tree().paused = true
 	print("Game paused")
 
 func resume_game():
 	is_paused = false
 	visible = false
-	get_tree().paused = false
 	print("Game resumed")
 
 func build_pause_menu():

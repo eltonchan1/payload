@@ -1,15 +1,20 @@
 extends Control
 
+var yay_sfx: AudioStreamPlayer
+
 func _ready():
 	# Build UI programmatically
 	build_win_screen()
-	
+	yay_sfx = AudioStreamPlayer.new()
+	yay_sfx.bus = "SFX"
+	yay_sfx.stream = preload("res://audio/sfx/yay.mp3")
+	add_child(yay_sfx)
 	# Get stats from LevelManager
 	var level_manager = get_node("/root/LevelManager")
 	
 	if level_manager:
 		display_stats(level_manager)
-	
+	yay_sfx.play()
 	print("YOU WIN!")
 
 func build_win_screen():
@@ -44,6 +49,7 @@ func build_win_screen():
 	var rounds_label = Label.new()
 	rounds_label.name = "RoundsLabel"
 	rounds_label.text = "Completed 10 Rounds!"
+	rounds_label.text = "Now try to do it without any upgrades..."
 	rounds_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rounds_label.add_theme_font_size_override("font_size", 32)
 	rounds_label.add_theme_color_override("font_color", Color.WHITE)
@@ -123,24 +129,39 @@ func display_stats(level_manager):
 	if rounds_label:
 		rounds_label.text = "Completed " + str(level_manager.levels_completed) + " Rounds!"
 	
-	# Update stats
-	var stats_container = get_node_or_null("CenterContainer/VBoxContainer/StatsContainer")
-	if stats_container:
-		var speed_label = stats_container.get_node_or_null("SpeedLabel/Value")
-		if speed_label:
-			speed_label.text = str(snapped(level_manager.player_speed_multiplier, 0.1)) + "x"
-		
-		var jump_label = stats_container.get_node_or_null("JumpLabel/Value")
-		if jump_label:
-			jump_label.text = str(snapped(level_manager.player_jump_multiplier, 0.1)) + "x"
-		
-		var gravity_label = stats_container.get_node_or_null("GravityLabel/Value")
-		if gravity_label:
-			gravity_label.text = str(snapped(level_manager.player_gravity_multiplier, 0.1)) + "x"
-		
-		var blocks_label = stats_container.get_node_or_null("BlocksLabel/Value")
-		if blocks_label:
-			blocks_label.text = str(level_manager.player_blocks)
+	# Update stats - search for nodes recursively
+	var speed_value = find_node_recursive(self, "SpeedLabel")
+	if speed_value:
+		var value_node = speed_value.get_node_or_null("Value")
+		if value_node:
+			value_node.text = str(snapped(level_manager.player_speed_multiplier, 0.1)) + "x"
+	
+	var jump_value = find_node_recursive(self, "JumpLabel")
+	if jump_value:
+		var value_node = jump_value.get_node_or_null("Value")
+		if value_node:
+			value_node.text = str(snapped(level_manager.player_jump_multiplier, 0.1)) + "x"
+	
+	var gravity_value = find_node_recursive(self, "GravityLabel")
+	if gravity_value:
+		var value_node = gravity_value.get_node_or_null("Value")
+		if value_node:
+			value_node.text = str(snapped(level_manager.player_gravity_multiplier, 0.1)) + "x"
+	
+	var blocks_value = find_node_recursive(self, "BlocksLabel")
+	if blocks_value:
+		var value_node = blocks_value.get_node_or_null("Value")
+		if value_node:
+			value_node.text = str(level_manager.player_blocks)
+
+func find_node_recursive(node: Node, node_name: String) -> Node:
+	if node.name == node_name:
+		return node
+	for child in node.get_children():
+		var result = find_node_recursive(child, node_name)
+		if result:
+			return result
+	return null
 
 func _on_menu_pressed():
 	# Reset game and go to main menu

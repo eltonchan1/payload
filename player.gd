@@ -15,6 +15,7 @@ var was_on_floor = false
 # Block spawning variables
 var block_scene: PackedScene
 var blocks_remaining = 10
+var block_place_sfx: AudioStreamPlayer  # SFX for placing blocks
 
 # Powerup variables
 var speed_multiplier = 1.0
@@ -31,6 +32,11 @@ func _ready():
 	
 	# Load your block scene
 	block_scene = preload("res://Block.tscn")
+	
+	block_place_sfx = AudioStreamPlayer.new()
+	block_place_sfx.bus = "SFX"
+	block_place_sfx.stream = preload("res://audio/sfx/blockplace.mp3")
+	add_child(block_place_sfx)
 	
 	# Get starting blocks from LevelManager (persistent between levels)
 	if has_node("/root/LevelManager"):
@@ -61,6 +67,8 @@ func _ready():
 		print("Block label setup complete with icon")
 	else:
 		print("ERROR: Block label not found")
+	# Update the label initially
+	update_block_label()
 
 func _physics_process(delta: float) -> void:
 	# Add gravity with multiplier
@@ -75,6 +83,7 @@ func _physics_process(delta: float) -> void:
 		elif blocks_remaining > 0:
 			# Air jump - costs a block
 			spawn_falling_block()
+			block_place_sfx.play()
 			velocity.y = JUMP_VELOCITY * jump_multiplier
 			blocks_remaining -= 1
 			update_block_label()

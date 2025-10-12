@@ -27,7 +27,7 @@ func open_shop():
 	print("Opening shop...")
 	# Find the shop UI in the level
 	if not shop_ui:
-		shop_ui = get_node("../../UI/ShopUI")  # Adjust path as needed
+		shop_ui = get_node("../../UI/ShopUI")  
 	
 	if shop_ui:
 		shop_ui.open_shop()
