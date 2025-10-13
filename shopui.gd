@@ -16,17 +16,17 @@ var purchased_items = []
 var purchased_upgrades = []
 
 var gear_items = [
-	{"name": "Speed Potion", "cost": 3, "description": "Increase movement speed by 30%", "effect": "speed"},
+	{"name": "Speed Potion", "cost": 3, "description": "Increase movement speed by 20%", "effect": "speed"},
 	{"name": "Jump Elixir", "cost": 4, "description": "Jump 20% higher", "effect": "jump"},
 	{"name": "Feather Charm", "cost": 3, "description": "Reduce gravity by 10%", "effect": "gravity"},
 	{"name": "Giveaway", "cost": 0, "description": "Gain 5 extra blocks", "effect": "blocks"}
 ]
 
 var armor_items = [
-	{"name": "Speed Helmet", "cost": 5, "slot": "head", "icon": "res://assets/armour/speedhelmet.png", "description": "Sleek helmet for speed", "bonus_type": "speed", "bonus_value": 0.3},
-	{"name": "Jump Boots", "cost": 5, "slot": "feet", "icon": "res://assets/armour/jumpboots.png", "description": "Bouncy boots for jumping", "bonus_type": "jump", "bonus_value": 0.2},
-	{"name": "Light Chestplate", "cost": 6, "slot": "chest", "icon": "res://assets/armour/lightchestplate.png", "description": "Lightweight armor", "bonus_type": "gravity", "bonus_value": -0.2},
-	{"name": "Agile Leggings", "cost": 4, "slot": "legs", "icon": "res://assets/armour/agileleggings.png", "description": "Flexible leg protection", "bonus_type": "speed", "bonus_value": 0.2},
+	{"name": "Speed Helmet", "cost": 5, "slot": "head", "icon": "res://assets/armour/speedhelmet.png", "description": "Increase movement speed by 30%", "bonus_type": "speed", "bonus_value": 0.3},
+	{"name": "Jump Boots", "cost": 5, "slot": "feet", "icon": "res://assets/armour/jumpboots.png", "description": "Jump 20% higher", "bonus_type": "jump", "bonus_value": 0.2},
+	{"name": "Light Chestplate", "cost": 6, "slot": "chest", "icon": "res://assets/armour/lightchestplate.png", "description": "Reduce gravity by 10%", "bonus_type": "gravity", "bonus_value": -0.2},
+	{"name": "Agile Leggings", "cost": 4, "slot": "legs", "icon": "res://assets/armour/agileleggings.png", "description": "Increase movement speed by 30%", "bonus_type": "speed", "bonus_value": 0.3},
 	{"name": "Plasma Helmet", "cost": 8, "slot": "head", "icon": "res://assets/armour/plasmahelmet.png", "description": "Part of Plasma Set, speed boost", "bonus_type": "speed", "bonus_value": 0.1},
 	{"name": "Plasma Chestplate", "cost": 8, "slot": "chest", "icon": "res://assets/armour/plasmachestplate.png", "description": "Part of Plasma Set, jump boost", "bonus_type": "jump", "bonus_value": 0.1},
 	{"name": "Plasma Leggings", "cost": 8, "slot": "legs", "icon": "res://assets/armour/plasmaleggings.png", "description": "Part of Plasma Set, gravity decrease", "bonus_type": "gravity", "bonus_value": -0.1},
@@ -311,7 +311,7 @@ func apply_gear_effect(item_data):
 	match item_data["effect"]:
 		"speed":
 			var old_speed = player_ref.speed_multiplier
-			player_ref.speed_multiplier += 0.3
+			player_ref.speed_multiplier += 0.2
 			if stat_notif:
 				stat_notif.show_stat_change("Speed", old_speed, player_ref.speed_multiplier, Color.CYAN)
 			save_powerups_to_manager()
@@ -413,13 +413,15 @@ func apply_upgrade(upgrade_data):
 	match upgrade_data["effect"]:
 		"discount":
 			discount_active = true
-			if stat_notif:
+			print("✓ BULK DISCOUNT ACTIVATED - All items now cost -1 block!")
+			if stat_notif and stat_notif.has_method("show_notification"):
 				stat_notif.show_notification("Bulk Discount Active!", "All items -1 block", Color.GOLD)
 			populate_current_tab()
 		"extra_slot":
 			extra_shop_slots += 1
 			items_per_category = 2 + extra_shop_slots
-			if stat_notif:
+			print("✓ EXTRA SHOP SLOT UNLOCKED - Now showing ", items_per_category, " items per category!")
+			if stat_notif and stat_notif.has_method("show_notification"):
 				stat_notif.show_notification("Extra Shop Slot!", "Now showing " + str(items_per_category) + " items per category", Color.GOLD)
 			randomize_shop_inventory()
 			populate_current_tab()

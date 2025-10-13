@@ -24,8 +24,8 @@ var feet_icon
 
 # Set bonus tracking
 var has_plasma_set_bonus = false
-var plasma_set_speed_bonus = 1.0  # Additional multiplier
-var plasma_set_jump_bonus = 1.0   # Additional multiplier
+var plasma_set_speed_bonus = 1.5  # Additional multiplier
+var plasma_set_jump_bonus = 1.5   # Additional multiplier
 var plasma_set_gravity_bonus = -0.4  # Subtract from gravity
 
 func _ready():
