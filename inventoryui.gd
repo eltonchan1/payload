@@ -28,6 +28,9 @@ var plasma_set_speed_bonus = 1.5  # Additional multiplier
 var plasma_set_jump_bonus = 1.5   # Additional multiplier
 var plasma_set_gravity_bonus = -0.4  # Subtract from gravity
 
+# Shop upgrades tracking
+var shop_upgrades = []
+
 func _ready():
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -381,8 +384,15 @@ func update_powerups_list():
 	# Check for plasma set bonus first
 	if has_plasma_set_bonus:
 		powerups.append("• PLASMA SET BONUS (Active!)")
-		powerups.append("  +100% Speed, +100% Jump, -40% Gravity")
+		powerups.append("  +150% Speed, +150% Jump, -40% Gravity")
 	
+	# Get shop upgrades from ShopUI
+	var shop_ui = get_node_or_null("/root/ShopUI")
+	if shop_ui and shop_ui.active_upgrades.size() > 0:
+		for upgrade in shop_ui.active_upgrades:
+			powerups.append("• " + upgrade)
+	
+	# Add stat totals
 	if player_ref.speed_multiplier > 1.0:
 		var boost = (player_ref.speed_multiplier - 1.0) * 100
 		powerups.append("• Total Speed: +" + str(int(boost)) + "%")
@@ -410,6 +420,8 @@ func update_powerups_list():
 				label.add_theme_font_size_override("font_size", 16)
 			elif powerups[i].begins_with("  "):
 				label.add_theme_color_override("font_color", Color.LIGHT_CORAL)
+			elif powerups[i].contains("Bulk Discount") or powerups[i].contains("Extra Shop Slot"):
+				label.add_theme_color_override("font_color", Color.GOLD)
 			else:
 				label.add_theme_color_override("font_color", Color.CYAN)
 			powerups_list.add_child(label)

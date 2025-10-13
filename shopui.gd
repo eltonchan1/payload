@@ -47,6 +47,9 @@ var discount_active = false
 var extra_shop_slots = 0
 var items_per_category = 2
 
+# Track active permanent upgrades
+var active_upgrades = []
+
 func _ready():
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -500,10 +503,12 @@ func open_mystery_pack(pack_data):
 
 func apply_upgrade(upgrade_data):
 	var stat_notif = get_node_or_null("/root/StatNotifications")
+	var upgrade_name = upgrade_data.get("name", "Unknown Upgrade")
 	
 	match upgrade_data["effect"]:
 		"discount":
 			discount_active = true
+			active_upgrades.append("Bulk Discount - All items cost 1 less")
 			print("✓ BULK DISCOUNT ACTIVATED - All items now cost -1 block!")
 			if stat_notif and stat_notif.has_method("show_notification"):
 				stat_notif.show_notification("Bulk Discount Active!", "All items -1 block", Color.GOLD)
@@ -511,11 +516,14 @@ func apply_upgrade(upgrade_data):
 		"extra_slot":
 			extra_shop_slots += 1
 			items_per_category = 2 + extra_shop_slots
+			active_upgrades.append("Extra Shop Slot - " + str(items_per_category) + " items per category")
 			print("✓ EXTRA SHOP SLOT UNLOCKED - Now showing ", items_per_category, " items per category!")
 			if stat_notif and stat_notif.has_method("show_notification"):
 				stat_notif.show_notification("Extra Shop Slot!", "Now showing " + str(items_per_category) + " items per category", Color.GOLD)
 			randomize_shop_inventory()
 			populate_current_tab()
+	
+	print("Active upgrades: ", active_upgrades)
 
 func save_powerups_to_manager():
 	var level_manager = player_ref.get_node_or_null("/root/LevelManager")
