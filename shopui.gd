@@ -27,10 +27,10 @@ var armor_items = [
 	{"name": "Jump Boots", "cost": 5, "slot": "feet", "icon": "res://assets/armour/jumpboots.png", "description": "Jump 20% higher", "bonus_type": "jump", "bonus_value": 0.2},
 	{"name": "Light Chestplate", "cost": 6, "slot": "chest", "icon": "res://assets/armour/lightchestplate.png", "description": "Reduce gravity by 10%", "bonus_type": "gravity", "bonus_value": -0.2},
 	{"name": "Agile Leggings", "cost": 4, "slot": "legs", "icon": "res://assets/armour/agileleggings.png", "description": "Increase movement speed by 30%", "bonus_type": "speed", "bonus_value": 0.3},
-	{"name": "Plasma Helmet", "cost": 8, "slot": "head", "icon": "res://assets/armour/plasmahelmet.png", "description": "Part of Plasma Set, speed boost", "bonus_type": "speed", "bonus_value": 0.1},
-	{"name": "Plasma Chestplate", "cost": 8, "slot": "chest", "icon": "res://assets/armour/plasmachestplate.png", "description": "Part of Plasma Set, jump boost", "bonus_type": "jump", "bonus_value": 0.1},
-	{"name": "Plasma Leggings", "cost": 8, "slot": "legs", "icon": "res://assets/armour/plasmaleggings.png", "description": "Part of Plasma Set, gravity decrease", "bonus_type": "gravity", "bonus_value": -0.1},
-	{"name": "Plasma Boots", "cost": 8, "slot": "feet", "icon": "res://assets/armour/plasmaboots.png", "description": "Part of Plasma Set, speed boost", "bonus_type": "speed", "bonus_value": 0.1}
+	{"name": "Plasma Helmet", "cost": 8, "slot": "head", "icon": "res://assets/armour/plasmahelmet.png", "description": "Part of Plasma Set, speed boost", "bonus_type": "speed", "bonus_value": 0.1, "set": "plasma"},
+	{"name": "Plasma Chestplate", "cost": 8, "slot": "chest", "icon": "res://assets/armour/plasmachestplate.png", "description": "Part of Plasma Set, jump boost", "bonus_type": "jump", "bonus_value": 0.1, "set": "plasma"},
+	{"name": "Plasma Leggings", "cost": 8, "slot": "legs", "icon": "res://assets/armour/plasmaleggings.png", "description": "Part of Plasma Set, gravity decrease", "bonus_type": "gravity", "bonus_value": -0.1, "set": "plasma"},
+	{"name": "Plasma Boots", "cost": 8, "slot": "feet", "icon": "res://assets/armour/plasmaboots.png", "description": "Part of Plasma Set, speed boost", "bonus_type": "speed", "bonus_value": 0.1, "set": "plasma"}
 ]
 
 var mystery_packs = [
@@ -337,9 +337,24 @@ func apply_gear_effect(item_data):
 			if stat_notif:
 				stat_notif.show_blocks_change(old_blocks, player_ref.blocks_remaining)
 
+func check_plasma_set_status_before() -> bool:
+	var inventory = get_node_or_null("/root/InventoryUI")
+	if not inventory:
+		return false
+	
+	var has_helmet = inventory.head_item and inventory.head_item.get("name", "").contains("Plasma")
+	var has_chest = inventory.chest_item and inventory.chest_item.get("name", "").contains("Plasma")
+	var has_legs = inventory.legs_item and inventory.legs_item.get("name", "").contains("Plasma")
+	var has_boots = inventory.feet_item and inventory.feet_item.get("name", "").contains("Plasma")
+	
+	return has_helmet and has_chest and has_legs and has_boots
+
 func apply_armor_effect(item_data):
 	var stat_notif = get_node_or_null("/root/StatNotifications")
 	var inventory = get_node_or_null("/root/InventoryUI")
+	
+	# Check if we had the full set BEFORE this change
+	var had_full_set = check_plasma_set_status_before()
 	
 	var old_armor = null
 	if inventory:
@@ -397,8 +412,84 @@ func apply_armor_effect(item_data):
 		
 		save_powerups_to_manager()
 	
+	# Equip the armor in inventory (this will trigger the inventory's plasma set check)
 	if inventory:
 		inventory.equip_item(item_data["slot"], item_data)
+		
+		# Wait a moment, then check if plasma set status changed
+		await get_tree().create_timer(0.1).timeout
+		
+		var has_full_set_now = inventory.has_plasma_set_bonus
+		
+		# Show notifications based on set status change
+		if not had_full_set and has_full_set_now:
+			# Just completed the plasma set!
+			await get_tree().create_timer(0.4).timeout
+			show_plasma_set_complete_notification()
+		elif had_full_set and not has_full_set_now:
+			# Just lost the plasma set
+			await get_tree().create_timer(0.4).timeout
+			show_plasma_set_broken_notification()
+
+func show_plasma_set_complete_notification():
+	var stat_notif = get_node_or_null("/root/StatNotifications")
+	if not stat_notif:
+		return
+	
+	# Get the actual bonus values from inventory
+	var inventory = get_node_or_null("/root/InventoryUI")
+	if not inventory:
+		return
+	
+	var old_speed = player_ref.speed_multiplier - inventory.plasma_set_speed_bonus
+	var old_jump = player_ref.jump_multiplier - inventory.plasma_set_jump_bonus
+	var old_gravity = player_ref.gravity_multiplier - inventory.plasma_set_gravity_bonus
+	
+	# Show main notification
+	if stat_notif.has_method("show_notification"):
+		stat_notif.show_notification("PLASMA SET COMPLETE!", "Set bonuses activated!", Color.MAGENTA)
+	
+	# Show individual stat changes with delays
+	await get_tree().create_timer(0.3).timeout
+	stat_notif.show_stat_change("Speed", old_speed, player_ref.speed_multiplier, Color.MAGENTA)
+	
+	await get_tree().create_timer(0.3).timeout
+	stat_notif.show_stat_change("Jump", old_jump, player_ref.jump_multiplier, Color.MAGENTA)
+	
+	await get_tree().create_timer(0.3).timeout
+	stat_notif.show_stat_change("Gravity", old_gravity, player_ref.gravity_multiplier, Color.MAGENTA)
+	
+	print("✓ PLASMA SET COMPLETE - Notification shown!")
+
+func show_plasma_set_broken_notification():
+	var stat_notif = get_node_or_null("/root/StatNotifications")
+	if not stat_notif:
+		return
+	
+	# Get the actual bonus values from inventory
+	var inventory = get_node_or_null("/root/InventoryUI")
+	if not inventory:
+		return
+	
+	var old_speed = player_ref.speed_multiplier + inventory.plasma_set_speed_bonus
+	var old_jump = player_ref.jump_multiplier + inventory.plasma_set_jump_bonus
+	var old_gravity = player_ref.gravity_multiplier + inventory.plasma_set_gravity_bonus
+	
+	# Show main notification
+	if stat_notif.has_method("show_notification"):
+		stat_notif.show_notification("Plasma Set Broken", "Set bonuses removed", Color.ORANGE_RED)
+	
+	# Show individual stat changes with delays
+	await get_tree().create_timer(0.3).timeout
+	stat_notif.show_stat_change("Speed", old_speed, player_ref.speed_multiplier, Color.ORANGE_RED)
+	
+	await get_tree().create_timer(0.3).timeout
+	stat_notif.show_stat_change("Jump", old_jump, player_ref.jump_multiplier, Color.ORANGE_RED)
+	
+	await get_tree().create_timer(0.3).timeout
+	stat_notif.show_stat_change("Gravity", old_gravity, player_ref.gravity_multiplier, Color.ORANGE_RED)
+	
+	print("✗ PLASMA SET BROKEN - Notification shown")
 
 func open_mystery_pack(pack_data):
 	var num_items = randi_range(1, 3) if pack_data["name"] == "Common Pack" else randi_range(2, 4)
