@@ -192,4 +192,4 @@ func _on_menu_pressed():
 	var level_manager = get_node("/root/LevelManager")
 	if level_manager:
 		level_manager.reset_game()
-	get_tree().change_scene_to_file("res://MainMenu.tscn")
+	get_tree().change_scene_to_file("res://mainmenu.tscn")
