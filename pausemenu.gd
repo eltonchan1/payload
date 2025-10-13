@@ -131,4 +131,4 @@ func _on_settings_pressed():
 func _on_main_menu_pressed():
 	print("Returning to main menu...")
 	resume_game()  # Unpause first
-	get_tree().change_scene_to_file("res://MainMenu.tscn")
+	get_tree().change_scene_to_file("res://mainmenu.tscn")

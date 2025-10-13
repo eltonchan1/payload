@@ -17,13 +17,13 @@ config/icon="res://images/icon.svg"
 
 [autoload]
 
-LevelManager="*res://LevelManager.gd"
 ShopUI="*res://shopui.tscn"
 InventoryUI="*res://inventoryui.tscn"
 PauseMenu="*res://pausemenu.tscn"
 SettingsMenu="*res://settingsmenu.tscn"
 StatNotifications="*res://statnotifications.tscn"
 MusicManager="*res://musicmanager.gd"
+LevelManager="*res://levelmanager.gd"
 
 [display]
 

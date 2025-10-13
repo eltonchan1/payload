@@ -31,7 +31,7 @@ func _ready():
 	add_to_group("player")
 	
 	# Load your block scene
-	block_scene = preload("res://Block.tscn")
+	block_scene = preload("res://block.tscn")
 	
 	block_place_sfx = AudioStreamPlayer.new()
 	block_place_sfx.bus = "SFX"
