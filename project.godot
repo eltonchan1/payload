@@ -23,7 +23,7 @@ PauseMenu="*res://pausemenu.tscn"
 SettingsMenu="*res://settingsmenu.tscn"
 StatNotifications="*res://statnotifications.tscn"
 MusicManager="*res://musicmanager.gd"
-LevelManager="*res://levelmanager.gd"
+LevelManager="*res://LevelManager.gd"
 
 [display]
 
