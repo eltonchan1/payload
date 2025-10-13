@@ -16,38 +16,39 @@ var legs_slot
 var feet_slot
 var stats_labels = {}
 
+# Set bonus tracking
+var has_plasma_set_bonus = false
+var plasma_set_speed_bonus = 1.0  # Additional multiplier
+var plasma_set_jump_bonus = 1.0   # Additional multiplier
+var plasma_set_gravity_bonus = -0.4  # Subtract from gravity
+
 func _ready():
 	visible = false
-	process_mode = Node.PROCESS_MODE_ALWAYS  # Changed from WHEN_PAUSED
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	build_inventory_ui()
 	print("InventoryUI ready - Press Q to open")
 
 func _input(event):
-	# Only process keyboard events to avoid spam from mouse movement
 	if not event is InputEventKey:
 		return
 	
-	# Don't process input if shop is open
 	var shop_ui = get_node_or_null("/root/ShopUI")
 	if shop_ui and shop_ui.visible:
 		return
 	
-	# Toggle inventory with Q key or Shift keys
 	if event.pressed and not event.echo:
-		if event.keycode == KEY_Q or event.keycode == KEY_SHIFT or event.keycode == KEY_SHIFT:
+		if event.keycode == KEY_Q or event.keycode == KEY_SHIFT:
 			print("Toggle key pressed - toggling inventory")
 			toggle_inventory()
 			get_viewport().set_input_as_handled()
 			return
 	
-	# Also check for the proper input action if it exists
 	if InputMap.has_action("inventory_toggle") and event.is_action_pressed("inventory_toggle"):
 		print("inventory_toggle action pressed")
 		toggle_inventory()
 		get_viewport().set_input_as_handled()
 		return
 	
-	# Also allow ESC to close (but don't open with ESC)
 	if visible and event.is_action_pressed("ui_cancel"):
 		print("ESC pressed - closing inventory")
 		hide_inventory()
@@ -61,20 +62,17 @@ func toggle_inventory():
 		show_inventory()
 
 func show_inventory():
-	# Don't open if shop is open
 	var shop_ui = get_node_or_null("/root/ShopUI")
 	if shop_ui and shop_ui.visible:
 		print("Can't open inventory - shop is open")
 		return
 	
-	# Find player
 	if not player_ref:
 		var players = get_tree().get_nodes_in_group("player")
 		if players.size() > 0:
 			player_ref = players[0]
 	
 	visible = true
-	# Only pause if not already paused
 	if not get_tree().paused:
 		get_tree().paused = true
 	update_stats_display()
@@ -82,32 +80,27 @@ func show_inventory():
 
 func hide_inventory():
 	visible = false
-	# Only unpause if shop is not open
 	var shop_ui = get_node_or_null("/root/ShopUI")
 	if not shop_ui or not shop_ui.visible:
 		get_tree().paused = false
 	print("Inventory closed")
 
 func build_inventory_ui():
-	# Main container
 	var control = Control.new()
 	control.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(control)
 	
-	# Main panel
 	inventory_panel = Panel.new()
 	inventory_panel.custom_minimum_size = Vector2(600, 500)
 	inventory_panel.set_anchors_preset(Control.PRESET_CENTER)
 	inventory_panel.position = Vector2(-300, -250)
 	control.add_child(inventory_panel)
 	
-	# Main layout
 	var main_hbox = HBoxContainer.new()
 	main_hbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 15)
 	main_hbox.add_theme_constant_override("separation", 20)
 	inventory_panel.add_child(main_hbox)
 	
-	# Left side - Equipment
 	var left_vbox = VBoxContainer.new()
 	left_vbox.custom_minimum_size = Vector2(250, 0)
 	left_vbox.add_theme_constant_override("separation", 10)
@@ -118,7 +111,6 @@ func build_inventory_ui():
 	equip_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	left_vbox.add_child(equip_title)
 	
-	# Create equipment slots
 	head_slot = create_equipment_slot("Head", "helmet")
 	chest_slot = create_equipment_slot("Chest", "chestplate")
 	legs_slot = create_equipment_slot("Legs", "leggings")
@@ -131,7 +123,6 @@ func build_inventory_ui():
 	
 	main_hbox.add_child(left_vbox)
 	
-	# Right side - Stats
 	var right_vbox = VBoxContainer.new()
 	right_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right_vbox.add_theme_constant_override("separation", 10)
@@ -142,7 +133,6 @@ func build_inventory_ui():
 	stats_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	right_vbox.add_child(stats_title)
 	
-	# Create stats display
 	stats_labels["speed"] = create_stat_label("Speed")
 	stats_labels["jump"] = create_stat_label("Jump Power")
 	stats_labels["gravity"] = create_stat_label("Gravity")
@@ -151,7 +141,6 @@ func build_inventory_ui():
 	for stat in stats_labels.values():
 		right_vbox.add_child(stat)
 	
-	# Add powerup list
 	var spacer = Control.new()
 	spacer.custom_minimum_size = Vector2(0, 20)
 	right_vbox.add_child(spacer)
@@ -167,13 +156,11 @@ func build_inventory_ui():
 	
 	main_hbox.add_child(right_vbox)
 	
-	# Close button at bottom
 	var close_btn = Button.new()
 	close_btn.text = "Close (Q or ESC)"
 	close_btn.custom_minimum_size = Vector2(200, 40)
 	close_btn.pressed.connect(hide_inventory)
 	
-	# Position close button at bottom center manually
 	close_btn.anchor_left = 0.5
 	close_btn.anchor_right = 0.5
 	close_btn.anchor_top = 1.0
@@ -195,13 +182,11 @@ func create_equipment_slot(slot_name: String, _slot_type: String) -> PanelContai
 	hbox.add_theme_constant_override("separation", 10)
 	slot_panel.add_child(hbox)
 	
-	# Slot icon/placeholder
 	var icon = ColorRect.new()
 	icon.custom_minimum_size = Vector2(50, 50)
 	icon.color = Color(0.3, 0.3, 0.3)
 	hbox.add_child(icon)
 	
-	# Slot info
 	var vbox = VBoxContainer.new()
 	var name_label = Label.new()
 	name_label.text = slot_name
@@ -236,27 +221,126 @@ func create_stat_label(stat_name: String) -> HBoxContainer:
 	
 	return hbox
 
+func check_plasma_set_bonus():
+	# Debug: Print all equipped items
+	print("=== CHECKING PLASMA SET ===")
+	print("Head: ", head_item.get("name", "Empty") if head_item else "Empty")
+	print("Chest: ", chest_item.get("name", "Empty") if chest_item else "Empty")
+	print("Legs: ", legs_item.get("name", "Empty") if legs_item else "Empty")
+	print("Feet: ", feet_item.get("name", "Empty") if feet_item else "Empty")
+	
+	# Check if all armor pieces are plasma armor
+	var head_is_plasma = head_item != null and head_item.get("name", "").contains("Plasma")
+	var chest_is_plasma = chest_item != null and chest_item.get("name", "").contains("Plasma")
+	var legs_is_plasma = legs_item != null and legs_item.get("name", "").contains("Plasma")
+	var feet_is_plasma = feet_item != null and feet_item.get("name", "").contains("Plasma")
+	
+	print("Head is plasma: ", head_is_plasma)
+	print("Chest is plasma: ", chest_is_plasma)
+	print("Legs is plasma: ", legs_is_plasma)
+	print("Feet is plasma: ", feet_is_plasma)
+	
+	var is_plasma_set = head_is_plasma and chest_is_plasma and legs_is_plasma and feet_is_plasma
+	
+	print("Full set: ", is_plasma_set)
+	print("Current set bonus active: ", has_plasma_set_bonus)
+	print("========================")
+	
+	# Apply or remove set bonus
+	if is_plasma_set and not has_plasma_set_bonus:
+		print("✓ PLASMA SET BONUS ACTIVATED!")
+		has_plasma_set_bonus = true
+		apply_plasma_set_bonus(true)
+	elif not is_plasma_set and has_plasma_set_bonus:
+		print("✗ Plasma set bonus removed")
+		has_plasma_set_bonus = false
+		apply_plasma_set_bonus(false)
+	else:
+		print("No change in set bonus status")
+
+func apply_plasma_set_bonus(enable: bool):
+	if not player_ref:
+		return
+	
+	if enable:
+		# ADD set bonuses to existing stats
+		player_ref.speed_multiplier += plasma_set_speed_bonus
+		player_ref.jump_multiplier += plasma_set_jump_bonus
+		player_ref.gravity_multiplier += plasma_set_gravity_bonus
+		
+		# Clamp gravity to reasonable values
+		if player_ref.gravity_multiplier < 0.1:
+			player_ref.gravity_multiplier = 0.1
+		
+		print("Applied plasma set bonus!")
+		print("  → Speed: +", plasma_set_speed_bonus, "x (now ", player_ref.speed_multiplier, "x)")
+		print("  → Jump: +", plasma_set_jump_bonus, "x (now ", player_ref.jump_multiplier, "x)")
+		print("  → Gravity: ", plasma_set_gravity_bonus, " (now ", player_ref.gravity_multiplier, "x)")
+		
+		# Save to level manager
+		var level_manager = player_ref.get_node_or_null("/root/LevelManager")
+		if level_manager:
+			level_manager.save_powerups(
+				player_ref.speed_multiplier,
+				player_ref.jump_multiplier,
+				player_ref.gravity_multiplier
+			)
+	else:
+		# REMOVE set bonuses from current stats
+		player_ref.speed_multiplier -= plasma_set_speed_bonus
+		player_ref.jump_multiplier -= plasma_set_jump_bonus
+		player_ref.gravity_multiplier -= plasma_set_gravity_bonus
+		
+		# Ensure values don't go below minimums
+		if player_ref.speed_multiplier < 1.0:
+			player_ref.speed_multiplier = 1.0
+		if player_ref.jump_multiplier < 1.0:
+			player_ref.jump_multiplier = 1.0
+		if player_ref.gravity_multiplier < 0.1:
+			player_ref.gravity_multiplier = 0.1
+		
+		print("Removed plasma set bonus")
+		print("  → Speed now: ", player_ref.speed_multiplier, "x")
+		print("  → Jump now: ", player_ref.jump_multiplier, "x")
+		print("  → Gravity now: ", player_ref.gravity_multiplier, "x")
+		
+		# Save to level manager
+		var level_manager = player_ref.get_node_or_null("/root/LevelManager")
+		if level_manager:
+			level_manager.save_powerups(
+				player_ref.speed_multiplier,
+				player_ref.jump_multiplier,
+				player_ref.gravity_multiplier
+			)
+	
+	# Update UI if visible
+	if visible:
+		update_stats_display()
+
 func update_stats_display():
 	if not player_ref:
 		return
 	
-	# Update stats
 	stats_labels["speed"].get_node("Value").text = str(player_ref.speed_multiplier) + "x"
 	stats_labels["jump"].get_node("Value").text = str(player_ref.jump_multiplier) + "x"
 	stats_labels["gravity"].get_node("Value").text = str(player_ref.gravity_multiplier) + "x"
 	stats_labels["blocks"].get_node("Value").text = str(player_ref.blocks_remaining)
 	
-	# Color code stats (green if boosted, white if normal)
 	if player_ref.speed_multiplier > 1.0:
 		stats_labels["speed"].get_node("Value").add_theme_color_override("font_color", Color.GREEN)
+	else:
+		stats_labels["speed"].get_node("Value").add_theme_color_override("font_color", Color.YELLOW)
 	
 	if player_ref.jump_multiplier > 1.0:
 		stats_labels["jump"].get_node("Value").add_theme_color_override("font_color", Color.GREEN)
+	else:
+		stats_labels["jump"].get_node("Value").add_theme_color_override("font_color", Color.YELLOW)
 	
 	if player_ref.gravity_multiplier < 1.0:
 		stats_labels["gravity"].get_node("Value").add_theme_color_override("font_color", Color.GREEN)
+	else:
+		stats_labels["gravity"].get_node("Value").add_theme_color_override("font_color", Color.YELLOW)
 	
-	# Update powerups list
 	update_powerups_list()
 
 func update_powerups_list():
@@ -264,24 +348,27 @@ func update_powerups_list():
 	if not powerups_list:
 		return
 	
-	# Clear existing
 	for child in powerups_list.get_children():
 		child.queue_free()
 	
-	# Add active powerups
 	var powerups = []
+	
+	# Check for plasma set bonus first
+	if has_plasma_set_bonus:
+		powerups.append("• PLASMA SET BONUS (Active!)")
+		powerups.append("  +100% Speed, +100% Jump, -40% Gravity")
 	
 	if player_ref.speed_multiplier > 1.0:
 		var boost = (player_ref.speed_multiplier - 1.0) * 100
-		powerups.append("• Speed Boost (+" + str(int(boost)) + "%)")
+		powerups.append("• Total Speed: +" + str(int(boost)) + "%")
 	
 	if player_ref.jump_multiplier > 1.0:
 		var boost = (player_ref.jump_multiplier - 1.0) * 100
-		powerups.append("• Jump Boost (+" + str(int(boost)) + "%)")
+		powerups.append("• Total Jump: +" + str(int(boost)) + "%")
 	
 	if player_ref.gravity_multiplier < 1.0:
 		var reduction = (1.0 - player_ref.gravity_multiplier) * 100
-		powerups.append("• Reduced Gravity (-" + str(int(reduction)) + "%)")
+		powerups.append("• Total Gravity Reduction: -" + str(int(reduction)) + "%")
 	
 	if powerups.size() == 0:
 		var none_label = Label.new()
@@ -289,13 +376,19 @@ func update_powerups_list():
 		none_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 		powerups_list.add_child(none_label)
 	else:
-		for powerup in powerups:
+		for i in range(powerups.size()):
 			var label = Label.new()
-			label.text = powerup
-			label.add_theme_color_override("font_color", Color.CYAN)
+			label.text = powerups[i]
+			# Make plasma set bonus stand out with magenta color
+			if powerups[i].contains("PLASMA SET"):
+				label.add_theme_color_override("font_color", Color.MAGENTA)
+				label.add_theme_font_size_override("font_size", 16)
+			elif powerups[i].begins_with("  "):
+				label.add_theme_color_override("font_color", Color.LIGHT_CORAL)
+			else:
+				label.add_theme_color_override("font_color", Color.CYAN)
 			powerups_list.add_child(label)
 
-# Equipment management functions (for future use)
 func equip_item(slot: String, item_data: Dictionary):
 	print("equip_item called - slot: ", slot, ", item: ", item_data.get("name", "???"))
 	
@@ -315,7 +408,6 @@ func equip_item(slot: String, item_data: Dictionary):
 			slot_node = feet_slot
 	
 	if slot_node:
-		# Find the ItemLabel by searching through children
 		var item_label = find_item_label(slot_node)
 		if item_label:
 			item_label.text = item_data.get("name", "???")
@@ -325,8 +417,10 @@ func equip_item(slot: String, item_data: Dictionary):
 			print("✗ Could not find ItemLabel in slot")
 	else:
 		print("✗ Slot node not found")
+	
+	# Check for plasma set bonus after equipping
+	check_plasma_set_bonus()
 
-# Helper function to find the ItemLabel recursively
 func find_item_label(node: Node) -> Label:
 	if node.name == "ItemLabel" and node is Label:
 		return node

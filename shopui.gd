@@ -1,26 +1,19 @@
 extends CanvasLayer
 
 var player_ref = null
-var current_tab = 0  # 0=Gear, 1=Armor, 2=Mystery, 3=Upgrades
+var current_tab = 0
 
-# References to UI elements
 var blocks_label
 var content_container
 
-# Current level's shop inventory (randomized per level)
 var current_gear_shop = []
 var current_armor_shop = []
 var current_mystery_shop = []
 var current_upgrade_shop = []
-var shop_level_counter = -1  # Track using level completion count
+var shop_level_counter = -1
 
-# Track purchased items (sold out)
-var purchased_items = []  # Temporary items (gear, armor, mystery)
-var purchased_upgrades = []  # Permanent (stay sold out forever)
-
-# Shop items data (EASY TO CUSTOMIZE!)
-# To add/change items, edit these arrays:
-# Format: {"name": "Item Name", "cost": 5, "description": "What it does", "effect": "speed/jump/gravity/blocks"}
+var purchased_items = []
+var purchased_upgrades = []
 
 var gear_items = [
 	{"name": "Speed Potion", "cost": 3, "description": "Increase movement speed by 30%", "effect": "speed"},
@@ -29,14 +22,15 @@ var gear_items = [
 	{"name": "Giveaway", "cost": 0, "description": "Gain 5 extra blocks", "effect": "blocks"}
 ]
 
-# Armor items - add bonus_type and bonus_value for stat bonuses
-# Format: {"name": "", "cost": 5, "slot": "head/chest/legs/feet", "description": "", "bonus_type": "speed/jump/gravity", "bonus_value": 0.3}
-
 var armor_items = [
 	{"name": "Speed Helmet", "cost": 5, "slot": "head", "description": "Sleek helmet for speed", "bonus_type": "speed", "bonus_value": 0.3},
 	{"name": "Jump Boots", "cost": 5, "slot": "feet", "description": "Bouncy boots for jumping", "bonus_type": "jump", "bonus_value": 0.2},
 	{"name": "Light Chestplate", "cost": 6, "slot": "chest", "description": "Lightweight armor", "bonus_type": "gravity", "bonus_value": -0.2},
-	{"name": "Agile Leggings", "cost": 4, "slot": "legs", "description": "Flexible leg protection", "bonus_type": "speed", "bonus_value": 0.2}
+	{"name": "Agile Leggings", "cost": 4, "slot": "legs", "description": "Flexible leg protection", "bonus_type": "speed", "bonus_value": 0.2},
+	{"name": "Plasma Helmet", "cost": 8, "slot": "head", "description": "Part of Plasma Set", "bonus_type": "speed", "bonus_value": 0.1},
+	{"name": "Plasma Chestplate", "cost": 8, "slot": "chest", "description": "Part of Plasma Set", "bonus_type": "jump", "bonus_value": 0.1},
+	{"name": "Plasma Leggings", "cost": 8, "slot": "legs", "description": "Part of Plasma Set", "bonus_type": "gravity", "bonus_value": -0.1},
+	{"name": "Plasma Boots", "cost": 8, "slot": "feet", "description": "Part of Plasma Set", "bonus_type": "speed", "bonus_value": 0.1}
 ]
 
 var mystery_packs = [
@@ -49,30 +43,26 @@ var upgrade_items = [
 	{"name": "Extra Shop Slot", "cost": 15, "description": "Get 1 more item per shop category (permanent)", "effect": "extra_slot"}
 ]
 
-# Voucher effects tracking
-var discount_active = false  # Bulk discount voucher
-var extra_shop_slots = 0  # Extra slot voucher
-var items_per_category = 2  # Base amount
+var discount_active = false
+var extra_shop_slots = 0
+var items_per_category = 2
 
 func _ready():
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	build_shop_ui()
-	print("ShopUI ready")
+	print("ShopUI ready and loaded as autoload")
 
 func _input(event):
-	# Only process if shop is visible
 	if not visible:
 		return
 	
-	# Check for ESC to close
 	if event.is_action_pressed("ui_cancel"):
 		print("ESC pressed - closing shop")
 		hide_shop()
 		get_viewport().set_input_as_handled()
 		return
 	
-	# Check for S key to close
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_S:
 			print("S key pressed in shop - closing")
@@ -81,9 +71,9 @@ func _input(event):
 			return
 
 func show_shop(player):
+	print("show_shop() called with player: ", player)
 	player_ref = player
 	
-	# Get current level count from LevelManager
 	var level_manager = get_node_or_null("/root/LevelManager")
 	var current_level_count = 0
 	if level_manager:
@@ -91,18 +81,18 @@ func show_shop(player):
 	
 	print("Opening shop - Level count: ", current_level_count, ", Last shop level: ", shop_level_counter)
 	
-	# Randomize if this is a new level (level count changed)
 	if shop_level_counter != current_level_count:
-		print("NEW LEVEL (count changed) - Randomizing shop inventory")
+		print("NEW LEVEL - Randomizing shop inventory")
 		randomize_shop_inventory()
 		shop_level_counter = current_level_count
 	else:
-		print("SAME LEVEL (count unchanged) - Using existing shop inventory")
+		print("SAME LEVEL - Using existing shop inventory")
 	
 	visible = true
+	get_tree().paused = true
 	update_blocks_display()
 	switch_tab(0)
-	print("Shop opened - Player has ", player.blocks_remaining, " blocks")
+	print("Shop opened successfully")
 
 func hide_shop():
 	visible = false
@@ -188,41 +178,31 @@ func build_shop_ui():
 func update_blocks_display():
 	if blocks_label and player_ref:
 		blocks_label.text = "Blocks: " + str(player_ref.blocks_remaining)
-		print("Updated shop display to: ", player_ref.blocks_remaining, " blocks")
 
 func switch_tab(tab_index):
 	current_tab = tab_index
 	populate_current_tab()
-	print("Switched to tab: ", tab_index)
 
 func populate_current_tab():
 	if not content_container:
-		print("ERROR: Content container not found!")
 		return
 	
 	for child in content_container.get_children():
 		child.queue_free()
 	
-	var items_added = 0
 	match current_tab:
 		0:
 			for item in current_gear_shop:
 				content_container.add_child(create_shop_card(item, "gear"))
-				items_added += 1
 		1:
 			for item in current_armor_shop:
 				content_container.add_child(create_shop_card(item, "armor"))
-				items_added += 1
 		2:
 			for pack in current_mystery_shop:
 				content_container.add_child(create_shop_card(pack, "mystery"))
-				items_added += 1
 		3:
 			for upgrade in current_upgrade_shop:
 				content_container.add_child(create_shop_card(upgrade, "upgrade"))
-				items_added += 1
-	
-	print("Added ", items_added, " items to tab ", current_tab)
 
 func create_shop_card(item_data, item_type):
 	var item_name = item_data.get("name", "Unknown")
@@ -257,10 +237,9 @@ func create_shop_card(item_data, item_type):
 	var bottom_hbox = HBoxContainer.new()
 	var cost_label = Label.new()
 	
-	# Apply discount if active
 	var final_cost = item_data.get("cost", 0)
 	if discount_active and final_cost > 0:
-		final_cost = max(0, final_cost - 1)  # Reduce by 1, minimum 0
+		final_cost = max(0, final_cost - 1)
 		cost_label.text = "Cost: " + str(final_cost) + " blocks (discounted!)"
 		cost_label.add_theme_color_override("font_color", Color.LIGHT_GREEN)
 	else:
@@ -286,10 +265,8 @@ func create_shop_card(item_data, item_type):
 
 func purchase_item(item_data, item_type):
 	if not player_ref:
-		print("ERROR: No player reference!")
 		return
 	
-	# Calculate final cost with discount
 	var base_cost = item_data["cost"]
 	var final_cost = base_cost
 	if discount_active and base_cost > 0:
@@ -312,7 +289,7 @@ func purchase_item(item_data, item_type):
 		
 		print("✓ Purchased: ", item_data["name"], " for ", final_cost, " blocks")
 	else:
-		print("✗ Not enough blocks! Need ", final_cost, " but have ", player_ref.blocks_remaining)
+		print("✗ Not enough blocks!")
 
 func apply_item_effect(item_data, item_type):
 	match item_type:
@@ -337,14 +314,12 @@ func apply_gear_effect(item_data):
 			player_ref.speed_multiplier += 0.3
 			if stat_notif:
 				stat_notif.show_stat_change("Speed", old_speed, player_ref.speed_multiplier, Color.CYAN)
-			print("→ Speed increased to ", player_ref.speed_multiplier, "x")
 			save_powerups_to_manager()
 		"jump":
 			var old_jump = player_ref.jump_multiplier
 			player_ref.jump_multiplier += 0.2
 			if stat_notif:
 				stat_notif.show_stat_change("Jump", old_jump, player_ref.jump_multiplier, Color.LIGHT_GREEN)
-			print("→ Jump power increased to ", player_ref.jump_multiplier, "x")
 			save_powerups_to_manager()
 		"gravity":
 			var old_gravity = player_ref.gravity_multiplier
@@ -353,7 +328,6 @@ func apply_gear_effect(item_data):
 				player_ref.gravity_multiplier = 0.5
 			if stat_notif:
 				stat_notif.show_stat_change("Gravity", old_gravity, player_ref.gravity_multiplier, Color.LIGHT_BLUE)
-			print("→ Gravity reduced to ", player_ref.gravity_multiplier, "x")
 			save_powerups_to_manager()
 		"blocks":
 			var old_blocks = player_ref.blocks_remaining
@@ -362,11 +336,8 @@ func apply_gear_effect(item_data):
 			update_blocks_display()
 			if stat_notif:
 				stat_notif.show_blocks_change(old_blocks, player_ref.blocks_remaining)
-			print("→ Got 5 bonus blocks!")
 
 func apply_armor_effect(item_data):
-	print("→ Equipped: ", item_data["name"], " to slot: ", item_data["slot"])
-	
 	var stat_notif = get_node_or_null("/root/StatNotifications")
 	var inventory = get_node_or_null("/root/InventoryUI")
 	
@@ -392,8 +363,6 @@ func apply_armor_effect(item_data):
 		if stat_notif:
 			stat_notif.show_blocks_change(old_blocks, player_ref.blocks_remaining)
 		
-		print("Sold old ", old_armor.get("name", "armor"), " for ", refund, " blocks")
-		
 		if old_armor.has("bonus_type") and old_armor.has("bonus_value"):
 			match old_armor["bonus_type"]:
 				"speed":
@@ -413,13 +382,11 @@ func apply_armor_effect(item_data):
 				player_ref.speed_multiplier += bonus_value
 				if stat_notif:
 					stat_notif.show_stat_change("Speed", old_speed, player_ref.speed_multiplier, Color.STEEL_BLUE)
-				print("  + Speed bonus: ", bonus_value, " (new total: ", player_ref.speed_multiplier, "x)")
 			"jump":
 				var old_jump = player_ref.jump_multiplier
 				player_ref.jump_multiplier += bonus_value
 				if stat_notif:
 					stat_notif.show_stat_change("Jump", old_jump, player_ref.jump_multiplier, Color.STEEL_BLUE)
-				print("  + Jump bonus: ", bonus_value, " (new total: ", player_ref.jump_multiplier, "x)")
 			"gravity":
 				var old_gravity = player_ref.gravity_multiplier
 				player_ref.gravity_multiplier += bonus_value
@@ -427,28 +394,20 @@ func apply_armor_effect(item_data):
 					player_ref.gravity_multiplier = 0.1
 				if stat_notif:
 					stat_notif.show_stat_change("Gravity", old_gravity, player_ref.gravity_multiplier, Color.STEEL_BLUE)
-				print("  + Gravity bonus: ", bonus_value, " (new total: ", player_ref.gravity_multiplier, "x)")
 		
 		save_powerups_to_manager()
 	
 	if inventory:
-		print("Calling equip_item on inventory")
 		inventory.equip_item(item_data["slot"], item_data)
-	else:
-		print("Warning: Inventory not found at /root/InventoryUI")
 
 func open_mystery_pack(pack_data):
 	var num_items = randi_range(1, 3) if pack_data["name"] == "Common Pack" else randi_range(2, 4)
 	
-	print("Opening ", pack_data["name"], "...")
 	for i in range(num_items):
 		var random_item = gear_items[randi() % gear_items.size()]
-		print("  → Got: ", random_item["name"])
 		apply_gear_effect(random_item)
 
 func apply_upgrade(upgrade_data):
-	print("→ Applied upgrade: ", upgrade_data["name"])
-	
 	var stat_notif = get_node_or_null("/root/StatNotifications")
 	
 	match upgrade_data["effect"]:
@@ -456,17 +415,12 @@ func apply_upgrade(upgrade_data):
 			discount_active = true
 			if stat_notif:
 				stat_notif.show_notification("Bulk Discount Active!", "All items -1 block", Color.GOLD)
-			print("  ✓ Bulk Discount activated! All items cost 1 less")
-			# Refresh current tab to show discounted prices
 			populate_current_tab()
-			
 		"extra_slot":
 			extra_shop_slots += 1
 			items_per_category = 2 + extra_shop_slots
 			if stat_notif:
 				stat_notif.show_notification("Extra Shop Slot!", "Now showing " + str(items_per_category) + " items per category", Color.GOLD)
-			print("  ✓ Extra shop slot purchased! Now ", items_per_category, " items per category")
-			# Re-randomize to show more items
 			randomize_shop_inventory()
 			populate_current_tab()
 
@@ -480,8 +434,6 @@ func save_powerups_to_manager():
 		)
 
 func randomize_shop_inventory():
-	print("Randomizing shop for NEW level (Level ", shop_level_counter, ")...")
-	
 	purchased_items.clear()
 	
 	var gravity_maxed = player_ref and player_ref.gravity_multiplier <= 0.1
@@ -498,7 +450,6 @@ func randomize_shop_inventory():
 		if inventory.feet_item:
 			equipped_slots.append(inventory.feet_item.get("name", ""))
 	
-	# Use items_per_category which includes extra slots
 	var num_items = items_per_category
 	
 	var available_gear = []
@@ -524,8 +475,6 @@ func randomize_shop_inventory():
 		if not purchased_upgrades.has(upgrade.get("name", "")):
 			available_upgrades.append(upgrade)
 	current_upgrade_shop = get_random_items(available_upgrades, num_items)
-	
-	print("Shop inventory randomized (Items per category: ", num_items, ", Gravity maxed: ", gravity_maxed, ")")
 
 func get_random_items(source_array: Array, count: int) -> Array:
 	var result = []
