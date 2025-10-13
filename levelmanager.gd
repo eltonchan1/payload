@@ -13,7 +13,7 @@ var player_jump_multiplier = 1.0
 var player_gravity_multiplier = 1.0
 
 # Win condition
-const ROUNDS_TO_WIN = 15
+const ROUNDS_TO_WIN = 10
 
 var level_pools = {
 	"early": [
@@ -116,7 +116,7 @@ func load_next_level():
 
 func show_win_screen():
 	print("YOU WIN! Loading win screen...")
-	get_tree().change_scene_to_file("res://WinScreen.tscn")
+	get_tree().change_scene_to_file("res://winscreen.tscn")
 
 # Track blocks used (call from player)
 func blocks_used(amount: int):
