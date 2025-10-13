@@ -23,14 +23,14 @@ var gear_items = [
 ]
 
 var armor_items = [
-	{"name": "Speed Helmet", "cost": 5, "slot": "head", "description": "Sleek helmet for speed", "bonus_type": "speed", "bonus_value": 0.3},
-	{"name": "Jump Boots", "cost": 5, "slot": "feet", "description": "Bouncy boots for jumping", "bonus_type": "jump", "bonus_value": 0.2},
-	{"name": "Light Chestplate", "cost": 6, "slot": "chest", "description": "Lightweight armor", "bonus_type": "gravity", "bonus_value": -0.2},
-	{"name": "Agile Leggings", "cost": 4, "slot": "legs", "description": "Flexible leg protection", "bonus_type": "speed", "bonus_value": 0.2},
-	{"name": "Plasma Helmet", "cost": 8, "slot": "head", "description": "Part of Plasma Set", "bonus_type": "speed", "bonus_value": 0.1},
-	{"name": "Plasma Chestplate", "cost": 8, "slot": "chest", "description": "Part of Plasma Set", "bonus_type": "jump", "bonus_value": 0.1},
-	{"name": "Plasma Leggings", "cost": 8, "slot": "legs", "description": "Part of Plasma Set", "bonus_type": "gravity", "bonus_value": -0.1},
-	{"name": "Plasma Boots", "cost": 8, "slot": "feet", "description": "Part of Plasma Set", "bonus_type": "speed", "bonus_value": 0.1}
+	{"name": "Speed Helmet", "cost": 5, "slot": "head", "icon": "res://assets/armour/speedhelmet.png", "description": "Sleek helmet for speed", "bonus_type": "speed", "bonus_value": 0.3},
+	{"name": "Jump Boots", "cost": 5, "slot": "feet", "icon": "res://assets/armour/jumpboots.png", "description": "Bouncy boots for jumping", "bonus_type": "jump", "bonus_value": 0.2},
+	{"name": "Light Chestplate", "cost": 6, "slot": "chest", "icon": "res://assets/armour/lightchestplate.png", "description": "Lightweight armor", "bonus_type": "gravity", "bonus_value": -0.2},
+	{"name": "Agile Leggings", "cost": 4, "slot": "legs", "icon": "res://assets/armour/agileleggings.png", "description": "Flexible leg protection", "bonus_type": "speed", "bonus_value": 0.2},
+	{"name": "Plasma Helmet", "cost": 8, "slot": "head", "icon": "res://assets/armour/plasmahelmet.png", "description": "Part of Plasma Set, speed boost", "bonus_type": "speed", "bonus_value": 0.1},
+	{"name": "Plasma Chestplate", "cost": 8, "slot": "chest", "icon": "res://assets/armour/plasmachestplate.png", "description": "Part of Plasma Set, jump boost", "bonus_type": "jump", "bonus_value": 0.1},
+	{"name": "Plasma Leggings", "cost": 8, "slot": "legs", "icon": "res://assets/armour/plasmaleggings.png", "description": "Part of Plasma Set, gravity decrease", "bonus_type": "gravity", "bonus_value": -0.1},
+	{"name": "Plasma Boots", "cost": 8, "slot": "feet", "icon": "res://assets/armour/plasmaboots.png", "description": "Part of Plasma Set, speed boost", "bonus_type": "speed", "bonus_value": 0.1}
 ]
 
 var mystery_packs = [

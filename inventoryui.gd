@@ -16,6 +16,12 @@ var legs_slot
 var feet_slot
 var stats_labels = {}
 
+# Icon references for each slot
+var head_icon
+var chest_icon
+var legs_icon
+var feet_icon
+
 # Set bonus tracking
 var has_plasma_set_bonus = false
 var plasma_set_speed_bonus = 1.0  # Additional multiplier
@@ -111,10 +117,21 @@ func build_inventory_ui():
 	equip_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	left_vbox.add_child(equip_title)
 	
-	head_slot = create_equipment_slot("Head", "helmet")
-	chest_slot = create_equipment_slot("Chest", "chestplate")
-	legs_slot = create_equipment_slot("Legs", "leggings")
-	feet_slot = create_equipment_slot("Feet", "boots")
+	var head_result = create_equipment_slot("Head", "helmet")
+	head_slot = head_result["slot"]
+	head_icon = head_result["icon"]
+	
+	var chest_result = create_equipment_slot("Chest", "chestplate")
+	chest_slot = chest_result["slot"]
+	chest_icon = chest_result["icon"]
+	
+	var legs_result = create_equipment_slot("Legs", "leggings")
+	legs_slot = legs_result["slot"]
+	legs_icon = legs_result["icon"]
+	
+	var feet_result = create_equipment_slot("Feet", "boots")
+	feet_slot = feet_result["slot"]
+	feet_icon = feet_result["icon"]
 	
 	left_vbox.add_child(head_slot)
 	left_vbox.add_child(chest_slot)
@@ -174,7 +191,7 @@ func build_inventory_ui():
 	
 	print("Inventory UI built")
 
-func create_equipment_slot(slot_name: String, _slot_type: String) -> PanelContainer:
+func create_equipment_slot(slot_name: String, _slot_type: String) -> Dictionary:
 	var slot_panel = PanelContainer.new()
 	slot_panel.custom_minimum_size = Vector2(230, 70)
 	
@@ -182,9 +199,12 @@ func create_equipment_slot(slot_name: String, _slot_type: String) -> PanelContai
 	hbox.add_theme_constant_override("separation", 10)
 	slot_panel.add_child(hbox)
 	
-	var icon = ColorRect.new()
+	# Create TextureRect for icon instead of ColorRect
+	var icon = TextureRect.new()
 	icon.custom_minimum_size = Vector2(50, 50)
-	icon.color = Color(0.3, 0.3, 0.3)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.name = "Icon"
 	hbox.add_child(icon)
 	
 	var vbox = VBoxContainer.new()
@@ -201,7 +221,7 @@ func create_equipment_slot(slot_name: String, _slot_type: String) -> PanelContai
 	
 	hbox.add_child(vbox)
 	
-	return slot_panel
+	return {"slot": slot_panel, "icon": icon}
 
 func create_stat_label(stat_name: String) -> HBoxContainer:
 	var hbox = HBoxContainer.new()
@@ -260,7 +280,12 @@ func check_plasma_set_bonus():
 
 func apply_plasma_set_bonus(enable: bool):
 	if not player_ref:
-		return
+		var players = get_tree().get_nodes_in_group("player")
+		if players.size() > 0:
+			player_ref = players[0]
+		else:
+			print("ERROR: No player found for plasma set bonus!")
+			return
 	
 	if enable:
 		# ADD set bonuses to existing stats
@@ -392,20 +417,33 @@ func update_powerups_list():
 func equip_item(slot: String, item_data: Dictionary):
 	print("equip_item called - slot: ", slot, ", item: ", item_data.get("name", "???"))
 	
+	# Ensure we have player reference
+	if not player_ref:
+		var players = get_tree().get_nodes_in_group("player")
+		if players.size() > 0:
+			player_ref = players[0]
+			print("✓ Found player reference")
+	
 	var slot_node = null
+	var icon_node = null
+	
 	match slot:
 		"head":
 			head_item = item_data
 			slot_node = head_slot
+			icon_node = head_icon
 		"chest":
 			chest_item = item_data
 			slot_node = chest_slot
+			icon_node = chest_icon
 		"legs":
 			legs_item = item_data
 			slot_node = legs_slot
+			icon_node = legs_icon
 		"feet":
 			feet_item = item_data
 			slot_node = feet_slot
+			icon_node = feet_icon
 	
 	if slot_node:
 		var item_label = find_item_label(slot_node)
@@ -417,6 +455,20 @@ func equip_item(slot: String, item_data: Dictionary):
 			print("✗ Could not find ItemLabel in slot")
 	else:
 		print("✗ Slot node not found")
+	
+	# Update the icon if icon path is provided
+	if icon_node and item_data.has("icon"):
+		var icon_path = item_data.get("icon")
+		if icon_path and icon_path != "":
+			var texture = load(icon_path)
+			if texture:
+				icon_node.texture = texture
+				print("✓ Loaded icon: ", icon_path)
+			else:
+				print("✗ Failed to load icon: ", icon_path)
+		else:
+			# Clear icon if no path provided
+			icon_node.texture = null
 	
 	# Check for plasma set bonus after equipping
 	check_plasma_set_bonus()
