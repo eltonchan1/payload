@@ -1,7 +1,6 @@
 extends Area2D
 
-# Visual feedback
-@onready var sprite = $Sprite2D  # Or ColorRect
+@onready var sprite = $Sprite2D 
 
 func _ready():
 	body_entered.connect(_on_body_entered)

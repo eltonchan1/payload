@@ -8,13 +8,14 @@ var chest_item = null
 var legs_item = null
 var feet_item = null
 
-# UI references (will be created dynamically)
+# UI references 
 var inventory_panel
 var head_slot
 var chest_slot
 var legs_slot
 var feet_slot
 var stats_labels = {}
+var powerups_list_node = null 
 
 # Icon references for each slot
 var head_icon
@@ -170,9 +171,12 @@ func build_inventory_ui():
 	powerups_title.add_theme_font_size_override("font_size", 20)
 	right_vbox.add_child(powerups_title)
 	
-	var powerups_list = VBoxContainer.new()
-	powerups_list.name = "PowerupsList"
-	right_vbox.add_child(powerups_list)
+	# Create and store direct reference to powerups list
+	powerups_list_node = VBoxContainer.new()
+	powerups_list_node.name = "PowerupsList"
+	right_vbox.add_child(powerups_list_node)
+	
+	print("PowerupsList created and stored: ", powerups_list_node)
 	
 	main_hbox.add_child(right_vbox)
 	
@@ -202,7 +206,6 @@ func create_equipment_slot(slot_name: String, _slot_type: String) -> Dictionary:
 	hbox.add_theme_constant_override("separation", 10)
 	slot_panel.add_child(hbox)
 	
-	# Create TextureRect for icon instead of ColorRect
 	var icon = TextureRect.new()
 	icon.custom_minimum_size = Vector2(50, 50)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -372,11 +375,20 @@ func update_stats_display():
 	update_powerups_list()
 
 func update_powerups_list():
-	var powerups_list = inventory_panel.get_node_or_null("HBoxContainer/VBoxContainer2/PowerupsList")
-	if not powerups_list:
+	print("=== UPDATE POWERUPS LIST CALLED ===")
+	
+	# Use the direct reference instead of searching
+	if not powerups_list_node:
+		print("ERROR: powerups_list_node is null!")
 		return
 	
-	for child in powerups_list.get_children():
+	if not is_instance_valid(powerups_list_node):
+		print("ERROR: powerups_list_node is not valid!")
+		return
+	
+	print("✓ PowerupsList node found: ", powerups_list_node)
+	
+	for child in powerups_list_node.get_children():
 		child.queue_free()
 	
 	var powerups = []
@@ -385,36 +397,47 @@ func update_powerups_list():
 	if has_plasma_set_bonus:
 		powerups.append("• PLASMA SET BONUS (Active!)")
 		powerups.append("  +150% Speed, +150% Jump, -40% Gravity")
+		print("Added plasma set bonus to list")
 	
 	# Get shop upgrades from ShopUI
 	var shop_ui = get_node_or_null("/root/ShopUI")
-	if shop_ui and shop_ui.active_upgrades.size() > 0:
+	print("ShopUI reference: ", shop_ui)
+	
+	if shop_ui:
+		print("ShopUI found! Active upgrades count: ", shop_ui.active_upgrades.size())
+		print("Active upgrades array: ", shop_ui.active_upgrades)
+		
 		for upgrade in shop_ui.active_upgrades:
+			print("Adding upgrade to list: ", upgrade)
 			powerups.append("• " + upgrade)
+	else:
+		print("ERROR: ShopUI not found!")
 	
 	# Add stat totals
-	if player_ref.speed_multiplier > 1.0:
+	if player_ref and player_ref.speed_multiplier > 1.0:
 		var boost = (player_ref.speed_multiplier - 1.0) * 100
 		powerups.append("• Total Speed: +" + str(int(boost)) + "%")
 	
-	if player_ref.jump_multiplier > 1.0:
+	if player_ref and player_ref.jump_multiplier > 1.0:
 		var boost = (player_ref.jump_multiplier - 1.0) * 100
 		powerups.append("• Total Jump: +" + str(int(boost)) + "%")
 	
-	if player_ref.gravity_multiplier < 1.0:
+	if player_ref and player_ref.gravity_multiplier < 1.0:
 		var reduction = (1.0 - player_ref.gravity_multiplier) * 100
 		powerups.append("• Total Gravity Reduction: -" + str(int(reduction)) + "%")
+	
+	print("Total powerups to display: ", powerups.size())
 	
 	if powerups.size() == 0:
 		var none_label = Label.new()
 		none_label.text = "No upgrades active"
 		none_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
-		powerups_list.add_child(none_label)
+		powerups_list_node.add_child(none_label)
+		print("No upgrades - showing 'None' message")
 	else:
 		for i in range(powerups.size()):
 			var label = Label.new()
 			label.text = powerups[i]
-			# Make plasma set bonus stand out with magenta color
 			if powerups[i].contains("PLASMA SET"):
 				label.add_theme_color_override("font_color", Color.MAGENTA)
 				label.add_theme_font_size_override("font_size", 16)
@@ -424,7 +447,10 @@ func update_powerups_list():
 				label.add_theme_color_override("font_color", Color.GOLD)
 			else:
 				label.add_theme_color_override("font_color", Color.CYAN)
-			powerups_list.add_child(label)
+			powerups_list_node.add_child(label)
+			print("Added label: ", powerups[i])
+	
+	print("=== UPDATE POWERUPS LIST COMPLETE ===")
 
 func equip_item(slot: String, item_data: Dictionary):
 	print("equip_item called - slot: ", slot, ", item: ", item_data.get("name", "???"))
@@ -468,7 +494,7 @@ func equip_item(slot: String, item_data: Dictionary):
 	else:
 		print("✗ Slot node not found")
 	
-	# Update the icon if icon path is provided
+	# Update the icon
 	if icon_node and item_data.has("icon"):
 		var icon_path = item_data.get("icon")
 		if icon_path and icon_path != "":

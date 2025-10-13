@@ -13,9 +13,8 @@ var player_jump_multiplier = 1.0
 var player_gravity_multiplier = 1.0
 
 # Win condition
-const ROUNDS_TO_WIN = 20  # Change this to adjust win condition
+const ROUNDS_TO_WIN = 15
 
-# Define level paths for each stage
 var level_pools = {
 	"early": [
 		"res://levels/early_1.tscn",
@@ -47,10 +46,10 @@ func _ready():
 func level_completed(remaining_blocks: int):
 	levels_completed += 1
 	
-	# Calculate interest: 2 blocks for every 5 blocks remaining
+	# Calculate interest
 	var interest = (remaining_blocks / 5)
 	
-	# Add base reward for completing level: 5 blocks
+	# Add base reward for completing level
 	var completion_bonus = 3
 	
 	# Total bonus
@@ -67,10 +66,8 @@ func level_completed(remaining_blocks: int):
 	print("Next level blocks: ", player_blocks)
 	print("━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	
-	# Update stage based on progression
 	update_stage()
 	
-	# Load next level
 	load_next_level()
 
 # Determine which stage we're in
@@ -86,7 +83,6 @@ func update_stage():
 
 # Load a random level from current stage pool
 func load_next_level():
-	# Check if won
 	if levels_completed >= ROUNDS_TO_WIN:
 		show_win_screen()
 		return

@@ -55,6 +55,7 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	build_shop_ui()
 	print("ShopUI ready and loaded as autoload")
+	print("Initial active_upgrades: ", active_upgrades)
 
 func _input(event):
 	if not visible:
@@ -96,6 +97,7 @@ func show_shop(player):
 	update_blocks_display()
 	switch_tab(0)
 	print("Shop opened successfully")
+	print("Current active_upgrades when opening shop: ", active_upgrades)
 
 func hide_shop():
 	visible = false
@@ -284,6 +286,8 @@ func purchase_item(item_data, item_type):
 		
 		if item_type == "upgrade":
 			purchased_upgrades.append(item_name)
+			print("Added to purchased_upgrades: ", item_name)
+			print("purchased_upgrades now contains: ", purchased_upgrades)
 		else:
 			purchased_items.append(item_name)
 		
@@ -291,6 +295,7 @@ func purchase_item(item_data, item_type):
 		populate_current_tab()
 		
 		print("✓ Purchased: ", item_data["name"], " for ", final_cost, " blocks")
+		print("Current active_upgrades after purchase: ", active_upgrades)
 	else:
 		print("✗ Not enough blocks!")
 
@@ -502,28 +507,41 @@ func open_mystery_pack(pack_data):
 		apply_gear_effect(random_item)
 
 func apply_upgrade(upgrade_data):
+	print("=== APPLY_UPGRADE CALLED ===")
+	print("Upgrade data: ", upgrade_data)
+	
 	var stat_notif = get_node_or_null("/root/StatNotifications")
 	var upgrade_name = upgrade_data.get("name", "Unknown Upgrade")
+	
+	print("Upgrade name: ", upgrade_name)
+	print("Upgrade effect: ", upgrade_data.get("effect"))
 	
 	match upgrade_data["effect"]:
 		"discount":
 			discount_active = true
-			active_upgrades.append("Bulk Discount - All items cost 1 less")
+			var upgrade_text = "Bulk Discount - All items cost 1 less"
+			active_upgrades.append(upgrade_text)
 			print("✓ BULK DISCOUNT ACTIVATED - All items now cost -1 block!")
+			print("Added to active_upgrades: ", upgrade_text)
+			print("active_upgrades array now: ", active_upgrades)
 			if stat_notif and stat_notif.has_method("show_notification"):
 				stat_notif.show_notification("Bulk Discount Active!", "All items -1 block", Color.GOLD)
 			populate_current_tab()
 		"extra_slot":
 			extra_shop_slots += 1
 			items_per_category = 2 + extra_shop_slots
-			active_upgrades.append("Extra Shop Slot - " + str(items_per_category) + " items per category")
+			var upgrade_text = "Extra Shop Slot - " + str(items_per_category) + " items per category"
+			active_upgrades.append(upgrade_text)
 			print("✓ EXTRA SHOP SLOT UNLOCKED - Now showing ", items_per_category, " items per category!")
+			print("Added to active_upgrades: ", upgrade_text)
+			print("active_upgrades array now: ", active_upgrades)
 			if stat_notif and stat_notif.has_method("show_notification"):
 				stat_notif.show_notification("Extra Shop Slot!", "Now showing " + str(items_per_category) + " items per category", Color.GOLD)
 			randomize_shop_inventory()
 			populate_current_tab()
 	
-	print("Active upgrades: ", active_upgrades)
+	print("Final active upgrades: ", active_upgrades)
+	print("=== APPLY_UPGRADE COMPLETE ===")
 
 func save_powerups_to_manager():
 	var level_manager = player_ref.get_node_or_null("/root/LevelManager")

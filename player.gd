@@ -109,7 +109,7 @@ func spawn_falling_block():
 
 func update_block_label():
 	if block_label:
-		block_label.text = str(blocks_remaining)  # Just the number now
+		block_label.text = str(blocks_remaining)  
 	
 	# Also update shop UI if it's open (check autoload first)
 	var shop_ui = get_node_or_null("/root/ShopUI")
@@ -133,13 +133,13 @@ func setup_block_counter_with_icon():
 	icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	
-	# Load your block sprite (CHANGE THIS PATH to your actual block image)
-	var block_texture = load("res://sprites/block.png")  # ← Change this!
+	# Load block sprite 
+	var block_texture = load("res://sprites/block.png") 
 	
 	if block_texture:
 		icon.texture = block_texture
 	else:
-		# Fallback: Create a simple colored square
+		# Fallback
 		var fallback = ColorRect.new()
 		fallback.custom_minimum_size = Vector2(32, 32)
 		fallback.color = Color.ORANGE_RED
@@ -163,8 +163,6 @@ func setup_block_counter_with_icon():
 	block_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	
 	container.add_child(block_label)
-
-# Removed connect_to_flags and _on_flag_touched - flags are now shops
 
 func _on_powerup_selected(powerup_type):
 	print("Selected powerup: ", powerup_type)
