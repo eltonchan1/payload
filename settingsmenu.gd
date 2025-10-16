@@ -27,6 +27,8 @@ func show_settings(from_pause = false):
 	opened_from_pause = from_pause
 	visible = true
 	update_settings_display()
+	if has_node("/root/SpeedrunManager"):
+		get_node("/root/SpeedrunManager").pause_timer()
 	print("Settings menu opened (from pause: ", from_pause, ")")
 
 func hide_settings():
@@ -38,7 +40,8 @@ func hide_settings():
 		var pause_menu = get_node_or_null("/root/PauseMenu")
 		if pause_menu:
 			pause_menu.visible = true
-	
+	if has_node("/root/SpeedrunManager"):
+		get_node("/root/SpeedrunManager").resume_timer()
 	print("Settings menu closed")
 
 func build_settings_menu():

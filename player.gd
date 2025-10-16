@@ -69,6 +69,13 @@ func _ready():
 		print("ERROR: Block label not found")
 	# Update the label initially
 	update_block_label()
+	
+	# Add speedrun HUD if in speedrun mode
+	if has_node("/root/SpeedrunManager"):
+		var manager = get_node("/root/SpeedrunManager")
+		if manager.speedrun_active:
+			var hud = preload("res://speedrunhud.tscn").instantiate()
+			get_tree().root.add_child(hud)
 
 func _physics_process(delta: float) -> void:
 	# Add gravity with multiplier

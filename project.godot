@@ -24,6 +24,7 @@ SettingsMenu="*res://settingsmenu.tscn"
 StatNotifications="*res://statnotifications.tscn"
 MusicManager="*res://musicmanager.gd"
 LevelManager="*res://LevelManager.gd"
+SpeedrunManager="*res://speedrunmanager.gd"
 
 [display]
 

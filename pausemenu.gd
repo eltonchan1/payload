@@ -132,3 +132,13 @@ func _on_main_menu_pressed():
 	print("Returning to main menu...")
 	resume_game()  # Unpause first
 	get_tree().change_scene_to_file("res://mainmenu.tscn")
+
+func _on_pause():
+	get_tree().paused = true
+	if has_node("/root/SpeedrunManager"):
+		get_node("/root/SpeedrunManager").pause_timer()
+
+func _on_unpause():
+	get_tree().paused = false
+	if has_node("/root/SpeedrunManager"):
+		get_node("/root/SpeedrunManager").resume_timer()
