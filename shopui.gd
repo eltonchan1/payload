@@ -74,6 +74,7 @@ func _input(event):
 			get_viewport().set_input_as_handled()
 			return
 
+
 func show_shop(player):
 	print("show_shop() called with player: ", player)
 	player_ref = player
@@ -93,8 +94,12 @@ func show_shop(player):
 		print("SAME LEVEL - Using existing shop inventory")
 	
 	visible = true
-	# DON'T pause the game tree - this lets the speedrun timer keep running!
-	# get_tree().paused = true  <- REMOVED THIS LINE
+	
+	# Freeze the player instead of pausing the whole game
+	if player_ref:
+		player_ref.set_physics_process(false)
+		player_ref.set_process_input(false)
+	
 	update_blocks_display()
 	switch_tab(0)
 	print("Shop opened successfully")
@@ -102,9 +107,18 @@ func show_shop(player):
 
 func hide_shop():
 	visible = false
-	# var inventory_ui = get_node_or_null("/root/InventoryUI")
-	# if not inventory_ui or not inventory_ui.visible:
-	# 	get_tree().paused = false
+	
+	# Unfreeze the player
+	if player_ref:
+		player_ref.set_physics_process(true)
+		player_ref.set_process_input(true)
+	
+	# Only unpause if inventory is also closed
+	var inventory_ui = get_node_or_null("/root/InventoryUI")
+	if inventory_ui and inventory_ui.visible:
+		# Inventory is still open, don't unfreeze yet
+		pass
+	
 	print("Shop closed")
 
 func build_shop_ui():
