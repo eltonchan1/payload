@@ -93,7 +93,8 @@ func show_shop(player):
 		print("SAME LEVEL - Using existing shop inventory")
 	
 	visible = true
-	get_tree().paused = true
+	# DON'T pause the game tree - this lets the speedrun timer keep running!
+	# get_tree().paused = true  <- REMOVED THIS LINE
 	update_blocks_display()
 	switch_tab(0)
 	print("Shop opened successfully")
@@ -101,9 +102,9 @@ func show_shop(player):
 
 func hide_shop():
 	visible = false
-	var inventory_ui = get_node_or_null("/root/InventoryUI")
-	if not inventory_ui or not inventory_ui.visible:
-		get_tree().paused = false
+	# var inventory_ui = get_node_or_null("/root/InventoryUI")
+	# if not inventory_ui or not inventory_ui.visible:
+	# 	get_tree().paused = false
 	print("Shop closed")
 
 func build_shop_ui():

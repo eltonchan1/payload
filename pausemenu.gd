@@ -20,7 +20,8 @@ func _input(event):
 		return
 	
 	# Don't allow pausing in main menu
-	if get_tree().current_scene.name == "MainMenu":
+	var current_scene = get_tree().current_scene
+	if current_scene and current_scene.name == "MainMenu":
 		return
 	
 	# Don't open pause menu if shop or inventory are open
@@ -49,11 +50,23 @@ func toggle_pause():
 func pause_game():
 	is_paused = true
 	visible = true
+	get_tree().paused = true
+	
+	# Pause speedrun timer
+	if has_node("/root/SpeedrunManager"):
+		get_node("/root/SpeedrunManager").pause_timer()
+	
 	print("Game paused")
 
 func resume_game():
 	is_paused = false
 	visible = false
+	get_tree().paused = false
+	
+	# Resume speedrun timer
+	if has_node("/root/SpeedrunManager"):
+		get_node("/root/SpeedrunManager").resume_timer()
+	
 	print("Game resumed")
 
 func build_pause_menu():
@@ -132,13 +145,3 @@ func _on_main_menu_pressed():
 	print("Returning to main menu...")
 	resume_game()  # Unpause first
 	get_tree().change_scene_to_file("res://mainmenu.tscn")
-
-func _on_pause():
-	get_tree().paused = true
-	if has_node("/root/SpeedrunManager"):
-		get_node("/root/SpeedrunManager").pause_timer()
-
-func _on_unpause():
-	get_tree().paused = false
-	if has_node("/root/SpeedrunManager"):
-		get_node("/root/SpeedrunManager").resume_timer()
