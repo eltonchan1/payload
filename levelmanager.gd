@@ -116,6 +116,13 @@ func load_next_level():
 
 func show_win_screen():
 	print("YOU WIN! Loading win screen...")
+	
+	# End speedrun if active
+	if has_node("/root/SpeedrunManager"):
+		var speedrun_manager = get_node("/root/SpeedrunManager")
+		if speedrun_manager.speedrun_active:
+			speedrun_manager.end_speedrun()
+	
 	get_tree().change_scene_to_file("res://winscreen.tscn")
 
 # Track blocks used (call from player)

@@ -143,5 +143,12 @@ func _on_settings_pressed():
 
 func _on_main_menu_pressed():
 	print("Returning to main menu...")
+	
+	# Stop speedrun if active
+	if has_node("/root/SpeedrunManager"):
+		var speedrun_manager = get_node("/root/SpeedrunManager")
+		if speedrun_manager.speedrun_active:
+			speedrun_manager.stop_speedrun()
+	
 	resume_game()  # Unpause first
 	get_tree().change_scene_to_file("res://mainmenu.tscn")

@@ -35,6 +35,7 @@ func start_speedrun():
 
 func end_speedrun():
 	speedrun_paused = true
+	speedrun_active = false
 	emit_signal("speedrun_ended")
 	print("Speedrun ended! Final time: ", format_time(speedrun_time))
 
