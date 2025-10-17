@@ -38,6 +38,7 @@ func end_speedrun():
 	speedrun_active = false
 	emit_signal("speedrun_ended")
 	print("Speedrun ended! Final time: ", format_time(speedrun_time))
+	# Don't reset speedrun_time here - let the win screen access it
 
 func stop_speedrun():
 	speedrun_active = false

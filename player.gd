@@ -62,9 +62,9 @@ func _ready():
 		block_label = get_node("../UI/BlockLabel")
 	
 	if block_label:
-		# Convert Label to HBoxContainer with icon + text
-		setup_block_counter_with_icon()
-		print("Block label setup complete with icon")
+		# Convert Label to HBoxContainer with icon + text + background panel
+		setup_block_counter_with_panel()
+		print("Block label setup complete with panel and icon")
 	else:
 		print("ERROR: Block label not found")
 	# Update the label initially
@@ -126,13 +126,43 @@ func update_block_label():
 	if shop_ui and shop_ui.visible:
 		shop_ui.update_blocks_display()
 
-func setup_block_counter_with_icon():
-	# Create an HBoxContainer to hold icon + number
+func setup_block_counter_with_panel():
+	# Get the parent (UI CanvasLayer)
 	var parent = block_label.get_parent()
 	
+	# Remove the old label
+	parent.remove_child(block_label)
+	
+	# Create a control container positioned in top-left
+	var control = Control.new()
+	control.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	control.offset_left = 10
+	control.offset_top = 10
+	control.offset_right = 200
+	control.offset_bottom = 70
+	parent.add_child(control)
+	
+	# Create panel container for background
+	var panel_container = PanelContainer.new()
+	panel_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	control.add_child(panel_container)
+	
+	# Style the panel with semi-transparent dark background
+	var style_box = StyleBoxFlat.new()
+	style_box.bg_color = Color(0, 0, 0, 0.7)
+	style_box.border_color = Color(1, 1, 1, 0.3)
+	style_box.set_border_width_all(2)
+	style_box.set_corner_radius_all(8)
+	style_box.content_margin_left = 15
+	style_box.content_margin_right = 15
+	style_box.content_margin_top = 10
+	style_box.content_margin_bottom = 10
+	panel_container.add_theme_stylebox_override("panel", style_box)
+	
+	# Create an HBoxContainer to hold icon + number
 	var container = HBoxContainer.new()
-	container.position = Vector2(10, 10)
 	container.add_theme_constant_override("separation", 10)
+	panel_container.add_child(container)
 	
 	# Create icon (TextureRect)
 	var icon = TextureRect.new()
@@ -145,28 +175,21 @@ func setup_block_counter_with_icon():
 	
 	if block_texture:
 		icon.texture = block_texture
-	else:
-		# Fallback
-		var fallback = ColorRect.new()
-		fallback.custom_minimum_size = Vector2(32, 32)
-		fallback.color = Color.ORANGE_RED
-		container.add_child(fallback)
-		print("Warning: Block icon not found at res://sprites/block_icon.png, using fallback")
-	
-	if icon.texture:
 		container.add_child(icon)
-	
-	# Remove old label and add container
-	parent.remove_child(block_label)
-	parent.add_child(container)
+	else:
+		# Fallback - use colored square emoji
+		var fallback_label = Label.new()
+		fallback_label.text = "■"
+		fallback_label.add_theme_font_size_override("font_size", 32)
+		fallback_label.add_theme_color_override("font_color", Color.ORANGE_RED)
+		fallback_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		container.add_child(fallback_label)
+		print("Warning: Block icon not found at res://sprites/block.png, using fallback")
 	
 	# Re-setup the label with better styling
 	block_label.text = str(blocks_remaining)
 	block_label.add_theme_font_size_override("font_size", 32)
 	block_label.add_theme_color_override("font_color", Color.WHITE)
-	block_label.add_theme_color_override("font_shadow_color", Color.BLACK)
-	block_label.add_theme_constant_override("shadow_offset_x", 2)
-	block_label.add_theme_constant_override("shadow_offset_y", 2)
 	block_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	
 	container.add_child(block_label)

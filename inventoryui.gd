@@ -519,3 +519,75 @@ func find_item_label(node: Node) -> Label:
 		if result:
 			return result
 	return null
+
+func unequip_all_items():
+	print("=== UNEQUIPPING ALL ITEMS ===")
+	
+	# Remove plasma set bonus if active
+	if has_plasma_set_bonus:
+		apply_plasma_set_bonus(false)
+		has_plasma_set_bonus = false
+	
+	# Remove individual item bonuses before clearing
+	if head_item and head_item.has("bonus_type") and head_item.has("bonus_value"):
+		remove_item_bonus(head_item)
+	if chest_item and chest_item.has("bonus_type") and chest_item.has("bonus_value"):
+		remove_item_bonus(chest_item)
+	if legs_item and legs_item.has("bonus_type") and legs_item.has("bonus_value"):
+		remove_item_bonus(legs_item)
+	if feet_item and feet_item.has("bonus_type") and feet_item.has("bonus_value"):
+		remove_item_bonus(feet_item)
+	
+	# Clear all equipment slots
+	head_item = null
+	chest_item = null
+	legs_item = null
+	feet_item = null
+	
+	# Reset UI for all slots
+	reset_slot_ui(head_slot, head_icon)
+	reset_slot_ui(chest_slot, chest_icon)
+	reset_slot_ui(legs_slot, legs_icon)
+	reset_slot_ui(feet_slot, feet_icon)
+	
+	print("✓ All items unequipped")
+	print("=========================")
+
+func remove_item_bonus(item_data: Dictionary):
+	if not player_ref:
+		return
+	
+	match item_data["bonus_type"]:
+		"speed":
+			player_ref.speed_multiplier -= item_data["bonus_value"]
+			if player_ref.speed_multiplier < 1.0:
+				player_ref.speed_multiplier = 1.0
+		"jump":
+			player_ref.jump_multiplier -= item_data["bonus_value"]
+			if player_ref.jump_multiplier < 1.0:
+				player_ref.jump_multiplier = 1.0
+		"gravity":
+			player_ref.gravity_multiplier -= item_data["bonus_value"]
+			if player_ref.gravity_multiplier > 1.0:
+				player_ref.gravity_multiplier = 1.0
+	
+	# Save to level manager
+	var level_manager = player_ref.get_node_or_null("/root/LevelManager")
+	if level_manager:
+		level_manager.save_powerups(
+			player_ref.speed_multiplier,
+			player_ref.jump_multiplier,
+			player_ref.gravity_multiplier
+		)
+
+func reset_slot_ui(slot_node, icon_node):
+	if not slot_node:
+		return
+	
+	var item_label = find_item_label(slot_node)
+	if item_label:
+		item_label.text = "Empty"
+		item_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	
+	if icon_node:
+		icon_node.texture = null

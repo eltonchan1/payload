@@ -150,5 +150,11 @@ func _on_main_menu_pressed():
 		if speedrun_manager.speedrun_active:
 			speedrun_manager.stop_speedrun()
 	
+	# Unequip all items
+	var inventory_ui = get_node_or_null("/root/InventoryUI")
+	if inventory_ui:
+		inventory_ui.unequip_all_items()
+		print("✓ Unequipped all items before returning to menu")
+	
 	resume_game()  # Unpause first
 	get_tree().change_scene_to_file("res://mainmenu.tscn")

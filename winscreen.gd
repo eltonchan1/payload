@@ -3,16 +3,28 @@ extends Control
 var yay_sfx: AudioStreamPlayer
 
 func _ready():
-	# Check if this was a speedrun completion FIRST
+	# Check if this was a speedrun completion
+	# The speedrun is already ended by LevelManager, but we can check if time > 0
 	var is_speedrun = false
+	var speedrun_time = 0.0
+	
 	if has_node("/root/SpeedrunManager"):
 		var manager = get_node("/root/SpeedrunManager")
-		if manager.speedrun_active:
+		print("SpeedrunManager found. speedrun_time = ", manager.speedrun_time)
+		print("speedrun_active = ", manager.speedrun_active)
+		print("speedrun_paused = ", manager.speedrun_paused)
+		# If there's a recorded time, this was a speedrun
+		if manager.speedrun_time > 0:
 			is_speedrun = true
-			# End the speedrun and record the time
-			manager.end_speedrun()
-			# Unlock speedrun mode if not already unlocked
-			manager.unlock_speedrun()
+			speedrun_time = manager.speedrun_time
+			print("Speedrun detected! Time: ", manager.format_time(speedrun_time))
+			# Don't reset yet - we need the time for display
+		else:
+			print("No speedrun time recorded (time is 0)")
+	else:
+		print("SpeedrunManager not found!")
+	
+	print("is_speedrun = ", is_speedrun)
 	
 	# Build UI programmatically
 	build_win_screen(is_speedrun)
@@ -178,7 +190,7 @@ func display_stats(level_manager, is_speedrun: bool = false):
 			# Show speedrun time
 			if has_node("/root/SpeedrunManager"):
 				var manager = get_node("/root/SpeedrunManager")
-				challenge_label.text = manager.format_time(manager.get_current_time())
+				challenge_label.text = manager.format_time(manager.speedrun_time)
 		else:
 			if used_upgrades:
 				challenge_label.text = "now try to win without buying anything..."
@@ -217,7 +229,7 @@ func display_stats(level_manager, is_speedrun: bool = false):
 			if value_node:
 				value_node.text = str(level_manager.player_blocks)
 	else:
-		# Unlock speedrun mode when beating normally
+		# Unlock speedrun mode when beating in speedrun
 		if has_node("/root/SpeedrunManager"):
 			get_node("/root/SpeedrunManager").unlock_speedrun()
 
@@ -231,7 +243,13 @@ func find_node_recursive(node: Node, node_name: String) -> Node:
 	return null
 
 func _on_menu_pressed():
-	# Stop speedrun if active
+	# Unequip all items
+	var inventory_ui = get_node_or_null("/root/InventoryUI")
+	if inventory_ui:
+		inventory_ui.unequip_all_items()
+		print("✓ Unequipped all items before returning to menu")
+	
+	# Reset speedrun for next time
 	if has_node("/root/SpeedrunManager"):
 		get_node("/root/SpeedrunManager").stop_speedrun()
 	
