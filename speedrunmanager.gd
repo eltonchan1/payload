@@ -1,12 +1,13 @@
 extends Node
 
-# Speedrun state
+# speedrun state
 var speedrun_unlocked = false
 var speedrun_active = false
 var speedrun_time = 0.0
 var speedrun_paused = false
+var just_unlocked = false  # track if just unlocked for notif
 
-# Konami code: Up, Up, Down, Down, Left, Right, Left, Right, B, A
+# konami code: up up down down left right left right b a
 var konami_code = [
 	KEY_UP, KEY_UP, KEY_DOWN, KEY_DOWN,
 	KEY_LEFT, KEY_RIGHT, KEY_LEFT, KEY_RIGHT,
@@ -38,7 +39,7 @@ func end_speedrun():
 	speedrun_active = false
 	emit_signal("speedrun_ended")
 	print("Speedrun ended! Final time: ", format_time(speedrun_time))
-	# Don't reset speedrun_time here - let the win screen access it
+	# dont reset speedrun_time let winscreen access
 
 func stop_speedrun():
 	speedrun_active = false

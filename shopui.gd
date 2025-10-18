@@ -47,7 +47,7 @@ var discount_active = false
 var extra_shop_slots = 0
 var items_per_category = 2
 
-# Track active permanent upgrades
+# track active perm upgrades
 var active_upgrades = []
 
 func _ready():
@@ -95,7 +95,7 @@ func show_shop(player):
 	
 	visible = true
 	
-	# Freeze the player instead of pausing the whole game
+	# freeze player
 	if player_ref:
 		player_ref.set_physics_process(false)
 		player_ref.set_process_input(false)
@@ -108,15 +108,15 @@ func show_shop(player):
 func hide_shop():
 	visible = false
 	
-	# Unfreeze the player
+	# unfreeze player
 	if player_ref:
 		player_ref.set_physics_process(true)
 		player_ref.set_process_input(true)
 	
-	# Only unpause if inventory is also closed
+	# only unpause if inv is also closed
 	var inventory_ui = get_node_or_null("/root/InventoryUI")
 	if inventory_ui and inventory_ui.visible:
-		# Inventory is still open, don't unfreeze yet
+		# inv still open don't unfreeze
 		pass
 	
 	print("Shop closed")
@@ -376,7 +376,7 @@ func apply_armor_effect(item_data):
 	var stat_notif = get_node_or_null("/root/StatNotifications")
 	var inventory = get_node_or_null("/root/InventoryUI")
 	
-	# Check if we had the full set BEFORE this change
+	# check if had full set b4 change
 	var had_full_set = check_plasma_set_status_before()
 	
 	var old_armor = null
@@ -435,22 +435,22 @@ func apply_armor_effect(item_data):
 		
 		save_powerups_to_manager()
 	
-	# Equip the armor in inventory (this will trigger the inventory's plasma set check)
+	# equip armor in inv (will trigger inv plasma check)
 	if inventory:
 		inventory.equip_item(item_data["slot"], item_data)
 		
-		# Wait a moment, then check if plasma set status changed
+		# wait then check if plasma status changed
 		await get_tree().create_timer(0.1).timeout
 		
 		var has_full_set_now = inventory.has_plasma_set_bonus
 		
-		# Show notifications based on set status change
+		# show notif based on set status change
 		if not had_full_set and has_full_set_now:
-			# Just completed the plasma set!
+			# completed plasma set
 			await get_tree().create_timer(0.4).timeout
 			show_plasma_set_complete_notification()
 		elif had_full_set and not has_full_set_now:
-			# Just lost the plasma set
+			# lost plasma set
 			await get_tree().create_timer(0.4).timeout
 			show_plasma_set_broken_notification()
 
@@ -459,7 +459,7 @@ func show_plasma_set_complete_notification():
 	if not stat_notif:
 		return
 	
-	# Get the actual bonus values from inventory
+	# get bonus vals from inv
 	var inventory = get_node_or_null("/root/InventoryUI")
 	if not inventory:
 		return
@@ -468,11 +468,11 @@ func show_plasma_set_complete_notification():
 	var old_jump = player_ref.jump_multiplier - inventory.plasma_set_jump_bonus
 	var old_gravity = player_ref.gravity_multiplier - inventory.plasma_set_gravity_bonus
 	
-	# Show main notification
+	# show main notif
 	if stat_notif.has_method("show_notification"):
 		stat_notif.show_notification("PLASMA SET COMPLETE!", "Set bonuses activated!", Color.MAGENTA)
 	
-	# Show individual stat changes with delays
+	# show individual stat changes w/ delays
 	await get_tree().create_timer(0.3).timeout
 	stat_notif.show_stat_change("Speed", old_speed, player_ref.speed_multiplier, Color.MAGENTA)
 	
@@ -489,7 +489,7 @@ func show_plasma_set_broken_notification():
 	if not stat_notif:
 		return
 	
-	# Get the actual bonus values from inventory
+	# get actual bonus values from inv
 	var inventory = get_node_or_null("/root/InventoryUI")
 	if not inventory:
 		return
@@ -498,11 +498,11 @@ func show_plasma_set_broken_notification():
 	var old_jump = player_ref.jump_multiplier + inventory.plasma_set_jump_bonus
 	var old_gravity = player_ref.gravity_multiplier + inventory.plasma_set_gravity_bonus
 	
-	# Show main notification
+	# show main notif
 	if stat_notif.has_method("show_notification"):
 		stat_notif.show_notification("Plasma Set Broken", "Set bonuses removed", Color.ORANGE_RED)
 	
-	# Show individual stat changes with delays
+	# show individual stat changes w/ delays
 	await get_tree().create_timer(0.3).timeout
 	stat_notif.show_stat_change("Speed", old_speed, player_ref.speed_multiplier, Color.ORANGE_RED)
 	
@@ -622,3 +622,27 @@ func get_random_items(source_array: Array, count: int) -> Array:
 		available.remove_at(random_index)
 	
 	return result
+
+func reset_shop():
+	print("=== RESETTING SHOP ===")
+	
+	# clear all purchases
+	purchased_items.clear()
+	purchased_upgrades.clear()
+	
+	# reset discount and extra slots
+	discount_active = false
+	extra_shop_slots = 0
+	items_per_category = 2
+	
+	# clear active upgrades list
+	active_upgrades.clear()
+	
+	# reset shop inventory counter
+	shop_level_counter = -1
+	
+	print("✓ Shop reset complete")
+	print("  - Discount: ", discount_active)
+	print("  - Extra slots: ", extra_shop_slots)
+	print("  - Active upgrades: ", active_upgrades)
+	print("======================")

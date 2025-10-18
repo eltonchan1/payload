@@ -2,13 +2,13 @@ extends CanvasLayer
 
 var player_ref = null
 
-# Equipment slots
+# equiment slots
 var head_item = null
 var chest_item = null
 var legs_item = null
 var feet_item = null
 
-# UI references 
+# ui refs
 var inventory_panel
 var head_slot
 var chest_slot
@@ -17,19 +17,19 @@ var feet_slot
 var stats_labels = {}
 var powerups_list_node = null 
 
-# Icon references for each slot
+# icon references for each slot
 var head_icon
 var chest_icon
 var legs_icon
 var feet_icon
 
-# Set bonus tracking
+# set bonus tracking
 var has_plasma_set_bonus = false
-var plasma_set_speed_bonus = 1.5  # Additional multiplier
-var plasma_set_jump_bonus = 1.5   # Additional multiplier
-var plasma_set_gravity_bonus = -0.4  # Subtract from gravity
+var plasma_set_speed_bonus = 1.5
+var plasma_set_jump_bonus = 1.5
+var plasma_set_gravity_bonus = -0.4
 
-# Shop upgrades tracking
+# shop upgrades tracking
 var shop_upgrades = []
 
 func _ready():
@@ -171,7 +171,7 @@ func build_inventory_ui():
 	powerups_title.add_theme_font_size_override("font_size", 20)
 	right_vbox.add_child(powerups_title)
 	
-	# Create and store direct reference to powerups list
+	# create & store direct reference to powerups list
 	powerups_list_node = VBoxContainer.new()
 	powerups_list_node.name = "PowerupsList"
 	right_vbox.add_child(powerups_list_node)
@@ -248,14 +248,14 @@ func create_stat_label(stat_name: String) -> HBoxContainer:
 	return hbox
 
 func check_plasma_set_bonus():
-	# Debug: Print all equipped items
+	# debug print all equipped items
 	print("=== CHECKING PLASMA SET ===")
 	print("Head: ", head_item.get("name", "Empty") if head_item else "Empty")
 	print("Chest: ", chest_item.get("name", "Empty") if chest_item else "Empty")
 	print("Legs: ", legs_item.get("name", "Empty") if legs_item else "Empty")
 	print("Feet: ", feet_item.get("name", "Empty") if feet_item else "Empty")
 	
-	# Check if all armor pieces are plasma armor
+	# check if all armor is plasma
 	var head_is_plasma = head_item != null and head_item.get("name", "").contains("Plasma")
 	var chest_is_plasma = chest_item != null and chest_item.get("name", "").contains("Plasma")
 	var legs_is_plasma = legs_item != null and legs_item.get("name", "").contains("Plasma")
@@ -272,7 +272,7 @@ func check_plasma_set_bonus():
 	print("Current set bonus active: ", has_plasma_set_bonus)
 	print("========================")
 	
-	# Apply or remove set bonus
+	# apply/remove set bonus
 	if is_plasma_set and not has_plasma_set_bonus:
 		print("✓ PLASMA SET BONUS ACTIVATED!")
 		has_plasma_set_bonus = true
@@ -294,12 +294,12 @@ func apply_plasma_set_bonus(enable: bool):
 			return
 	
 	if enable:
-		# ADD set bonuses to existing stats
+		# add set bonuses to existing stats
 		player_ref.speed_multiplier += plasma_set_speed_bonus
 		player_ref.jump_multiplier += plasma_set_jump_bonus
 		player_ref.gravity_multiplier += plasma_set_gravity_bonus
 		
-		# Clamp gravity to reasonable values
+		# cap gravity
 		if player_ref.gravity_multiplier < 0.1:
 			player_ref.gravity_multiplier = 0.1
 		
@@ -308,7 +308,7 @@ func apply_plasma_set_bonus(enable: bool):
 		print("  → Jump: +", plasma_set_jump_bonus, "x (now ", player_ref.jump_multiplier, "x)")
 		print("  → Gravity: ", plasma_set_gravity_bonus, " (now ", player_ref.gravity_multiplier, "x)")
 		
-		# Save to level manager
+		# save to level manager
 		var level_manager = player_ref.get_node_or_null("/root/LevelManager")
 		if level_manager:
 			level_manager.save_powerups(
@@ -317,12 +317,12 @@ func apply_plasma_set_bonus(enable: bool):
 				player_ref.gravity_multiplier
 			)
 	else:
-		# REMOVE set bonuses from current stats
+		# remove set bonuses from current stats
 		player_ref.speed_multiplier -= plasma_set_speed_bonus
 		player_ref.jump_multiplier -= plasma_set_jump_bonus
 		player_ref.gravity_multiplier -= plasma_set_gravity_bonus
 		
-		# Ensure values don't go below minimums
+		# make sure values dont go below minimums
 		if player_ref.speed_multiplier < 1.0:
 			player_ref.speed_multiplier = 1.0
 		if player_ref.jump_multiplier < 1.0:
@@ -335,7 +335,7 @@ func apply_plasma_set_bonus(enable: bool):
 		print("  → Jump now: ", player_ref.jump_multiplier, "x")
 		print("  → Gravity now: ", player_ref.gravity_multiplier, "x")
 		
-		# Save to level manager
+		# save to level manager
 		var level_manager = player_ref.get_node_or_null("/root/LevelManager")
 		if level_manager:
 			level_manager.save_powerups(
@@ -344,7 +344,7 @@ func apply_plasma_set_bonus(enable: bool):
 				player_ref.gravity_multiplier
 			)
 	
-	# Update UI if visible
+	# update ui if visible
 	if visible:
 		update_stats_display()
 
@@ -377,7 +377,7 @@ func update_stats_display():
 func update_powerups_list():
 	print("=== UPDATE POWERUPS LIST CALLED ===")
 	
-	# Use the direct reference instead of searching
+	# use direct ref instead o/ searching
 	if not powerups_list_node:
 		print("ERROR: powerups_list_node is null!")
 		return
@@ -393,13 +393,13 @@ func update_powerups_list():
 	
 	var powerups = []
 	
-	# Check for plasma set bonus first
+	# check for plasma set bonus first
 	if has_plasma_set_bonus:
 		powerups.append("• PLASMA SET BONUS (Active!)")
 		powerups.append("  +150% Speed, +150% Jump, -40% Gravity")
 		print("Added plasma set bonus to list")
 	
-	# Get shop upgrades from ShopUI
+	# get shop upgrades from shopui
 	var shop_ui = get_node_or_null("/root/ShopUI")
 	print("ShopUI reference: ", shop_ui)
 	
@@ -413,7 +413,7 @@ func update_powerups_list():
 	else:
 		print("ERROR: ShopUI not found!")
 	
-	# Add stat totals
+	# add stat totals
 	if player_ref and player_ref.speed_multiplier > 1.0:
 		var boost = (player_ref.speed_multiplier - 1.0) * 100
 		powerups.append("• Total Speed: +" + str(int(boost)) + "%")
@@ -455,7 +455,7 @@ func update_powerups_list():
 func equip_item(slot: String, item_data: Dictionary):
 	print("equip_item called - slot: ", slot, ", item: ", item_data.get("name", "???"))
 	
-	# Ensure we have player reference
+	# make sure have player ref
 	if not player_ref:
 		var players = get_tree().get_nodes_in_group("player")
 		if players.size() > 0:
@@ -494,7 +494,7 @@ func equip_item(slot: String, item_data: Dictionary):
 	else:
 		print("✗ Slot node not found")
 	
-	# Update the icon
+	# update icon
 	if icon_node and item_data.has("icon"):
 		var icon_path = item_data.get("icon")
 		if icon_path and icon_path != "":
@@ -508,7 +508,7 @@ func equip_item(slot: String, item_data: Dictionary):
 			# Clear icon if no path provided
 			icon_node.texture = null
 	
-	# Check for plasma set bonus after equipping
+	# check for plasma set bonus after equip
 	check_plasma_set_bonus()
 
 func find_item_label(node: Node) -> Label:
@@ -523,12 +523,12 @@ func find_item_label(node: Node) -> Label:
 func unequip_all_items():
 	print("=== UNEQUIPPING ALL ITEMS ===")
 	
-	# Remove plasma set bonus if active
+	# remove plasma set bonus if active
 	if has_plasma_set_bonus:
 		apply_plasma_set_bonus(false)
 		has_plasma_set_bonus = false
 	
-	# Remove individual item bonuses before clearing
+	# remove individual item bonuses b4 clearing
 	if head_item and head_item.has("bonus_type") and head_item.has("bonus_value"):
 		remove_item_bonus(head_item)
 	if chest_item and chest_item.has("bonus_type") and chest_item.has("bonus_value"):
@@ -538,13 +538,13 @@ func unequip_all_items():
 	if feet_item and feet_item.has("bonus_type") and feet_item.has("bonus_value"):
 		remove_item_bonus(feet_item)
 	
-	# Clear all equipment slots
+	# clear all equipment slots
 	head_item = null
 	chest_item = null
 	legs_item = null
 	feet_item = null
 	
-	# Reset UI for all slots
+	# reset ui for all slots
 	reset_slot_ui(head_slot, head_icon)
 	reset_slot_ui(chest_slot, chest_icon)
 	reset_slot_ui(legs_slot, legs_icon)
@@ -571,7 +571,7 @@ func remove_item_bonus(item_data: Dictionary):
 			if player_ref.gravity_multiplier > 1.0:
 				player_ref.gravity_multiplier = 1.0
 	
-	# Save to level manager
+	# save to level manager
 	var level_manager = player_ref.get_node_or_null("/root/LevelManager")
 	if level_manager:
 		level_manager.save_powerups(

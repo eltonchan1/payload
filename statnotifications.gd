@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-# UI container for notifications
+# ui container for notifs
 var notification_container: VBoxContainer
 
 func _ready():
@@ -9,13 +9,13 @@ func _ready():
 	print("StatNotifications ready")
 
 func build_notification_ui():
-	# Main container
+	# main container
 	var control = Control.new()
 	control.set_anchors_preset(Control.PRESET_FULL_RECT)
 	control.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(control)
 	
-	# Notification container (positioned under block counter)
+	# notif container (under block counter)
 	notification_container = VBoxContainer.new()
 	notification_container.position = Vector2(20, 70)  # Under block counter at (20, 50)
 	notification_container.add_theme_constant_override("separation", 5)
@@ -23,11 +23,11 @@ func build_notification_ui():
 	control.add_child(notification_container)
 
 func show_stat_change(stat_name: String, old_value: float, new_value: float, color: Color = Color.YELLOW):
-	# Create notification label
+	# create notif label
 	var notification = create_stat_notification(stat_name, old_value, new_value, color)
 	notification_container.add_child(notification)
 	
-	# Animate it
+	# animate
 	animate_notification(notification)
 	
 	print("Showing stat change: ", stat_name, " ", old_value, " → ", new_value)
@@ -35,7 +35,7 @@ func show_stat_change(stat_name: String, old_value: float, new_value: float, col
 func create_stat_notification(stat_name: String, old_value: float, new_value: float, color: Color) -> Label:
 	var label = Label.new()
 	
-	# Format the text
+	# format text
 	var formatted_old = format_stat_value(stat_name, old_value)
 	var formatted_new = format_stat_value(stat_name, new_value)
 	
@@ -43,12 +43,12 @@ func create_stat_notification(stat_name: String, old_value: float, new_value: fl
 	label.add_theme_font_size_override("font_size", 24)
 	label.add_theme_color_override("font_color", color)
 	
-	# Add shadow for visibility
+	# add shadow for visibility
 	label.add_theme_color_override("font_shadow_color", Color.BLACK)
 	label.add_theme_constant_override("shadow_offset_x", 2)
 	label.add_theme_constant_override("shadow_offset_y", 2)
 	
-	# Start transparent
+	# start transparent
 	label.modulate = Color(1, 1, 1, 0)
 	
 	return label
@@ -65,25 +65,25 @@ func format_stat_value(stat_name: String, value: float) -> String:
 func animate_notification(notification: Label):
 	var tween = create_tween()
 	
-	# Phase 1: Fade in (0.3s) - don't slide, just fade
+	# fade in
 	tween.tween_property(notification, "modulate:a", 1.0, 0.3)
 	
-	# Phase 2: Stay visible (1.5s)
+	# stay visible
 	tween.tween_interval(1.5)
 	
-	# Phase 3: Fade out (0.5s)
+	# fade out
 	tween.tween_property(notification, "modulate:a", 0.0, 0.5)
 	
-	# Phase 4: Remove from scene
+	# remove
 	tween.tween_callback(notification.queue_free)
 
 func show_item_purchased(item_name: String, item_type: String):
-	# Show what was purchased
+	# show what was purchased
 	var notification = Label.new()
 	notification.text = "Purchased: " + item_name
 	notification.add_theme_font_size_override("font_size", 28)
 	
-	# Color based on type
+	# colour based on type
 	var color = Color.CYAN
 	match item_type:
 		"gear":

@@ -1,18 +1,18 @@
 extends Node
 
-# Track game progression
-var current_stage = "early"  # early, middle, late
+# track game progression
+var current_stage = "early"
 var levels_completed = 0
 var total_blocks_used = 0
-var player_blocks = 10  # Track blocks between levels
-var last_level_played = ""  # Track to prevent immediate repeats
+var player_blocks = 10
+var last_level_played = ""
 
-# Track powerups between levels
+# track powerups btwn lvl
 var player_speed_multiplier = 1.0
 var player_jump_multiplier = 1.0
 var player_gravity_multiplier = 1.0
 
-# Win condition
+# win condition
 const ROUNDS_TO_WIN = 10
 
 var level_pools = {
@@ -34,25 +34,25 @@ var level_pools = {
 	]
 }
 
-# Thresholds for stage progression
-const MIDDLE_STAGE_THRESHOLD = 3  # After 3 levels, enter middle stage
-const LATE_STAGE_THRESHOLD = 5    # After 5 levels, enter late stage
+# thresholds for stage progression
+const MIDDLE_STAGE_THRESHOLD = 3  # after 3 lvl, enter middle
+const LATE_STAGE_THRESHOLD = 3    # after 3 lvl, enter late stage
 
 func _ready():
 	print("LevelManager ready")
 	print("Current stage: ", current_stage)
 
-# Call this when a level is completed
+# call when lvl is completed
 func level_completed(remaining_blocks: int):
 	levels_completed += 1
 	
-	# Calculate interest
+	# calculate interest
 	var interest = (remaining_blocks / 5)
 	
-	# Add base reward for completing level
+	# add base reward for completing level
 	var completion_bonus = 3
 	
-	# Total bonus
+	# total bonus
 	var bonus_blocks = interest + completion_bonus
 	
 	player_blocks = remaining_blocks + bonus_blocks
@@ -70,7 +70,7 @@ func level_completed(remaining_blocks: int):
 	
 	load_next_level()
 
-# Determine which stage we're in
+# determine which stage rn
 func update_stage():
 	if levels_completed >= LATE_STAGE_THRESHOLD:
 		current_stage = "late"
@@ -81,7 +81,7 @@ func update_stage():
 	
 	print("Current stage: ", current_stage)
 
-# Load a random level from current stage pool
+# load random level from current stage pool
 func load_next_level():
 	if levels_completed >= ROUNDS_TO_WIN:
 		show_win_screen()
@@ -94,14 +94,14 @@ func load_next_level():
 		return
 	
 	if available_levels.size() == 1:
-		# Only one level, have to use it
+		# only one level, have to use it
 		var level_path = available_levels[0]
 		last_level_played = level_path
 		print("Loading level (only option): ", level_path)
 		get_tree().change_scene_to_file(level_path)
 		return
 	
-	# Multiple levels - keep randomizing until we get a different one
+	# multiple lvl, keep randomizing till get diff one
 	var level_path = last_level_played
 	var attempts = 0
 	while level_path == last_level_played and attempts < 100:
@@ -117,7 +117,7 @@ func load_next_level():
 func show_win_screen():
 	print("YOU WIN! Loading win screen...")
 	
-	# End speedrun if active
+	# end speedrun if active
 	if has_node("/root/SpeedrunManager"):
 		var speedrun_manager = get_node("/root/SpeedrunManager")
 		if speedrun_manager.speedrun_active:
@@ -125,19 +125,19 @@ func show_win_screen():
 	
 	get_tree().change_scene_to_file("res://winscreen.tscn")
 
-# Track blocks used (call from player)
+# track blocks used (call from player)
 func blocks_used(amount: int):
 	total_blocks_used += amount
 
-# Get current difficulty/stage
+# get current diff/stage
 func get_current_stage() -> String:
 	return current_stage
 
-# Get blocks for new level (call from player when spawning)
+# get blocks for new level (call from player when spawning)
 func get_starting_blocks() -> int:
 	return player_blocks
 
-# Get powerup multipliers (call from player when spawning)
+# get powerup mult (call from player when spawning)
 func get_speed_multiplier() -> float:
 	return player_speed_multiplier
 
@@ -147,14 +147,14 @@ func get_jump_multiplier() -> float:
 func get_gravity_multiplier() -> float:
 	return player_gravity_multiplier
 
-# Save powerup multipliers (call from player when they change)
+# save powerup mult (call from player when they change)
 func save_powerups(speed: float, jump: float, gravity: float):
 	player_speed_multiplier = speed
 	player_jump_multiplier = jump
 	player_gravity_multiplier = gravity
 	print("Powerups saved - Speed: ", speed, "x, Jump: ", jump, "x, Gravity: ", gravity, "x")
 
-# Reset game (for starting new game)
+# reset game (for starting new game)
 func reset_game():
 	levels_completed = 0
 	total_blocks_used = 0

@@ -3,34 +3,33 @@ extends CharacterBody2D
 const SPEED = 750.0
 const JUMP_VELOCITY = -1500.0
 
-# Platformer feel improvements
-const JUMP_BUFFER_TIME = 0.15  # How long to remember jump input
-const COYOTE_TIME = 0.15  # How long you can jump after leaving ground
-const LEDGE_PUSH_DISTANCE = 10.0  # How far to push off ledges
+# platformer feel improvements
+const JUMP_BUFFER_TIME = 0.15  # time to remember jump input
+const COYOTE_TIME = 0.15  # how long can jump after leaving ground
+const LEDGE_PUSH_DISTANCE = 10.0  # how far to push off ledges
 
 var jump_buffer_timer = 0.0
 var coyote_timer = 0.0
 var was_on_floor = false
 
-# Block spawning variables
+# block spawning vars
 var block_scene: PackedScene
 var blocks_remaining = 10
-var block_place_sfx: AudioStreamPlayer  # SFX for placing blocks
+var block_place_sfx: AudioStreamPlayer  # sfx
 
-# Powerup variables
+# powerup vars
 var speed_multiplier = 1.0
 var jump_multiplier = 1.0
 var gravity_multiplier = 1.0
 
-# UI references (will be set in _ready)
+# ui references (_ready)
 var block_label: Label
-# powerup_menu removed - now using shop system
 
 func _ready():
-	# Add player to group so inventory can find it
+	# add player to group so inv can find it
 	add_to_group("player")
 	
-	# Load your block scene
+	# load block scene
 	block_scene = preload("res://block.tscn")
 	
 	block_place_sfx = AudioStreamPlayer.new()
@@ -38,12 +37,12 @@ func _ready():
 	block_place_sfx.stream = preload("res://audio/sfx/blockplace.mp3")
 	add_child(block_place_sfx)
 	
-	# Get starting blocks from LevelManager (persistent between levels)
+	# get starting blocks from levelmanager (sync btwn lvl)
 	if has_node("/root/LevelManager"):
 		var level_manager = get_node("/root/LevelManager")
 		blocks_remaining = level_manager.get_starting_blocks()
 		
-		# Load powerups from previous levels
+		# load powerups from previous lvl
 		speed_multiplier = level_manager.get_speed_multiplier()
 		jump_multiplier = level_manager.get_jump_multiplier()
 		gravity_multiplier = level_manager.get_gravity_multiplier()
@@ -51,26 +50,25 @@ func _ready():
 		print("Starting with ", blocks_remaining, " blocks from LevelManager")
 		print("Powerups loaded - Speed: ", speed_multiplier, "x, Jump: ", jump_multiplier, "x, Gravity: ", gravity_multiplier, "x")
 	else:
-		blocks_remaining = 10  # Fallback if no LevelManager
+		blocks_remaining = 10  # fallback
 		print("No LevelManager found, starting with 10 blocks")
 	
-	# Setup the label with better visibility
-	# Try to find label in different possible locations
+	# try find label in diff possible locations
 	if has_node("../../UI/BlockLabel"):
 		block_label = get_node("../../UI/BlockLabel")
 	elif has_node("../UI/BlockLabel"):
 		block_label = get_node("../UI/BlockLabel")
 	
 	if block_label:
-		# Convert Label to HBoxContainer with icon + text + background panel
+		# convert label to hboxcontainer w/ icon + text + background panel
 		setup_block_counter_with_panel()
 		print("Block label setup complete with panel and icon")
 	else:
 		print("ERROR: Block label not found")
-	# Update the label initially
+	# update the label initially
 	update_block_label()
 	
-	# Add speedrun HUD if in speedrun mode
+	# add speedrun hud if in speedrun mode
 	if has_node("/root/SpeedrunManager"):
 		var manager = get_node("/root/SpeedrunManager")
 		if manager.speedrun_active:
@@ -78,24 +76,24 @@ func _ready():
 			get_tree().root.add_child(hud)
 
 func _physics_process(delta: float) -> void:
-	# Add gravity with multiplier
+	# add gravity with mult
 	if not is_on_floor():
 		velocity += get_gravity() * delta * 2 * gravity_multiplier
 	
-	# Handle jumping
+	# handle jump
 	if Input.is_action_just_pressed("jump"):
 		if is_on_floor():
-			# Ground jump (always available)
+			# ground jump (always available)
 			velocity.y = JUMP_VELOCITY * jump_multiplier
 		elif blocks_remaining > 0:
-			# Air jump - costs a block
+			# air jump - costs a block
 			spawn_falling_block()
 			block_place_sfx.play()
 			velocity.y = JUMP_VELOCITY * jump_multiplier
 			blocks_remaining -= 1
 			update_block_label()
 	
-	# Handle movement
+	# handle movement
 	var direction := Input.get_axis("left", "right")
 	if direction:
 		velocity.x = direction * SPEED * speed_multiplier
@@ -110,7 +108,7 @@ func spawn_falling_block():
 		block.global_position = global_position + Vector2(0, 64)
 		get_tree().current_scene.add_child(block)
 		
-		# Track blocks used in LevelManager
+		# track blocks used in levelmanager
 		if has_node("/root/LevelManager"):
 			get_node("/root/LevelManager").blocks_used(1)
 
@@ -118,7 +116,7 @@ func update_block_label():
 	if block_label:
 		block_label.text = str(blocks_remaining)  
 	
-	# Also update shop UI if it's open (check autoload first)
+	# update shop ui if open (check autoload first)
 	var shop_ui = get_node_or_null("/root/ShopUI")
 	if not shop_ui:
 		shop_ui = get_tree().current_scene.get_node_or_null("UI/ShopUI")
@@ -127,13 +125,13 @@ func update_block_label():
 		shop_ui.update_blocks_display()
 
 func setup_block_counter_with_panel():
-	# Get the parent (UI CanvasLayer)
+	# get the parent (ui canvaslayer)
 	var parent = block_label.get_parent()
 	
-	# Remove the old label
+	# remove the old label
 	parent.remove_child(block_label)
 	
-	# Create a control container positioned in top-left
+	# create control container in top left
 	var control = Control.new()
 	control.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	control.offset_left = 10
@@ -142,12 +140,12 @@ func setup_block_counter_with_panel():
 	control.offset_bottom = 70
 	parent.add_child(control)
 	
-	# Create panel container for background
+	# create panel container for background
 	var panel_container = PanelContainer.new()
 	panel_container.set_anchors_preset(Control.PRESET_FULL_RECT)
 	control.add_child(panel_container)
 	
-	# Style the panel with semi-transparent dark background
+	# style the panel w/ semi transparent dark background
 	var style_box = StyleBoxFlat.new()
 	style_box.bg_color = Color(0, 0, 0, 0.7)
 	style_box.border_color = Color(1, 1, 1, 0.3)
@@ -159,25 +157,25 @@ func setup_block_counter_with_panel():
 	style_box.content_margin_bottom = 10
 	panel_container.add_theme_stylebox_override("panel", style_box)
 	
-	# Create an HBoxContainer to hold icon + number
+	# create hboxcontainer to hold icon + number
 	var container = HBoxContainer.new()
 	container.add_theme_constant_override("separation", 10)
 	panel_container.add_child(container)
 	
-	# Create icon (TextureRect)
+	# create icon (texturerect)
 	var icon = TextureRect.new()
 	icon.custom_minimum_size = Vector2(32, 32)
 	icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	
-	# Load block sprite 
+	# load block sprite 
 	var block_texture = load("res://sprites/block.png") 
 	
 	if block_texture:
 		icon.texture = block_texture
 		container.add_child(icon)
 	else:
-		# Fallback - use colored square emoji
+		# fallback
 		var fallback_label = Label.new()
 		fallback_label.text = "■"
 		fallback_label.add_theme_font_size_override("font_size", 32)
@@ -186,7 +184,7 @@ func setup_block_counter_with_panel():
 		container.add_child(fallback_label)
 		print("Warning: Block icon not found at res://sprites/block.png, using fallback")
 	
-	# Re-setup the label with better styling
+	# re setup the label
 	block_label.text = str(blocks_remaining)
 	block_label.add_theme_font_size_override("font_size", 32)
 	block_label.add_theme_color_override("font_color", Color.WHITE)

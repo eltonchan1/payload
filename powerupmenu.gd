@@ -8,13 +8,13 @@ signal powerup_selected(powerup_type)
 @onready var blocks_button = $Control/Panel/VBoxContainer/BlocksButton
 
 func _ready():
-	# Hide menu initially
+	# hide menu initially
 	visible = false
 	
-	# Set process mode so menu works when game is paused
+	# set process mode so menu works when game paused
 	process_mode = Node.PROCESS_MODE_WHEN_PAUSED
 	
-	# Connect buttons
+	# connect buttons
 	speed_button.pressed.connect(func(): _select_powerup("speed"))
 	jump_button.pressed.connect(func(): _select_powerup("jump"))
 	gravity_button.pressed.connect(func(): _select_powerup("gravity"))

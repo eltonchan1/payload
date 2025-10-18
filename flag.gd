@@ -15,7 +15,7 @@ func _ready():
 	
 	create_prompt_label()
 	
-	# Verify ShopUI exists
+	# make sure shopui exists
 	await get_tree().process_frame
 	var shop_ui = get_node_or_null("/root/ShopUI")
 	if shop_ui:

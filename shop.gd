@@ -9,7 +9,7 @@ func _ready():
 	print("Shop ready")
 
 func _process(_delta):
-	# Check if player presses 'S' while in range
+	# check if player presses 'S'  in range
 	if player_in_range and Input.is_action_just_pressed("ui_text_completion_accept"):  # Default 'S' key
 		open_shop()
 
@@ -25,7 +25,7 @@ func _on_body_exited(body):
 
 func open_shop():
 	print("Opening shop...")
-	# Find the shop UI in the level
+	# find shop UI in the lvl
 	if not shop_ui:
 		shop_ui = get_node("../../UI/ShopUI")  
 	
