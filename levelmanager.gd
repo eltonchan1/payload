@@ -36,7 +36,7 @@ var level_pools = {
 
 # thresholds for stage progression
 const MIDDLE_STAGE_THRESHOLD = 3  # after 3 lvl, enter middle
-const LATE_STAGE_THRESHOLD = 3    # after 3 lvl, enter late stage
+const LATE_STAGE_THRESHOLD = 6    # after 6 lvl, enter late stage
 
 func _ready():
 	print("LevelManager ready")
