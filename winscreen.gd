@@ -3,8 +3,8 @@ extends Control
 var yay_sfx: AudioStreamPlayer
 
 func _ready():
-	# check if was a speedrun completion
-	# speedrun already ended by levelmanager but can check if time > 0
+	# Check if this was a speedrun completion
+	# The speedrun is already ended by LevelManager, but we can check if time > 0
 	var is_speedrun = false
 	var speedrun_time = 0.0
 	
@@ -13,12 +13,12 @@ func _ready():
 		print("SpeedrunManager found. speedrun_time = ", manager.speedrun_time)
 		print("speedrun_active = ", manager.speedrun_active)
 		print("speedrun_paused = ", manager.speedrun_paused)
-		# if theres recorded time, was a speedrun
+		# If there's a recorded time, this was a speedrun
 		if manager.speedrun_time > 0:
 			is_speedrun = true
 			speedrun_time = manager.speedrun_time
 			print("Speedrun detected! Time: ", manager.format_time(speedrun_time))
-			# dont reset, need the time for display
+			# Don't reset yet - we need the time for display
 		else:
 			print("No speedrun time recorded (time is 0)")
 	else:
@@ -26,14 +26,14 @@ func _ready():
 	
 	print("is_speedrun = ", is_speedrun)
 	
-	# build ui
+	# Build UI programmatically
 	build_win_screen(is_speedrun)
 	yay_sfx = AudioStreamPlayer.new()
 	yay_sfx.bus = "SFX"
 	yay_sfx.stream = preload("res://audio/sfx/yay.mp3")
 	add_child(yay_sfx)
 	
-	# get stats from levelmanager
+	# Get stats from LevelManager
 	var level_manager = get_node("/root/LevelManager")
 	
 	if level_manager:
@@ -43,26 +43,26 @@ func _ready():
 	print("YOU WIN!")
 
 func build_win_screen(is_speedrun: bool = false):
-	# set fullscreen
+	# Set full screen
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	
-	# bg
+	# Background
 	var bg = ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.color = Color(0.1, 0.1, 0.15)
 	add_child(bg)
 	
-	# centre container
+	# Center container
 	var center = CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(center)
 	
-	# main vbox
+	# Main VBox
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 30)
 	center.add_child(vbox)
 	
-	# title
+	# Title
 	var title = Label.new()
 	title.text = "YOU WIN!"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -70,7 +70,7 @@ func build_win_screen(is_speedrun: bool = false):
 	title.add_theme_color_override("font_color", Color.GOLD)
 	vbox.add_child(title)
 	
-	# rounds completed/speedrun time
+	# Rounds completed (or speedrun time)
 	var rounds_label = Label.new()
 	rounds_label.name = "RoundsLabel"
 	if is_speedrun:
@@ -82,7 +82,7 @@ func build_win_screen(is_speedrun: bool = false):
 	rounds_label.add_theme_color_override("font_color", Color.WHITE)
 	vbox.add_child(rounds_label)
 	
-	# challenge text/speedrun time
+	# Challenge text / Speedrun time
 	var challenge_label = Label.new()
 	challenge_label.name = "ChallengeLabel"
 	challenge_label.text = ""
@@ -95,14 +95,14 @@ func build_win_screen(is_speedrun: bool = false):
 		challenge_label.add_theme_color_override("font_color", Color.LIGHT_GRAY)
 	vbox.add_child(challenge_label)
 	
-	# show stats if not speedrun
+	# Only show stats if NOT speedrun
 	if not is_speedrun:
-		# spacer
+		# Spacer
 		var spacer1 = Control.new()
 		spacer1.custom_minimum_size = Vector2(0, 30)
 		vbox.add_child(spacer1)
 		
-		# stats title
+		# Stats title
 		var stats_title = Label.new()
 		stats_title.text = "FINAL STATS"
 		stats_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -110,7 +110,7 @@ func build_win_screen(is_speedrun: bool = false):
 		stats_title.add_theme_color_override("font_color", Color.YELLOW)
 		vbox.add_child(stats_title)
 		
-		# stats container
+		# Stats container - centered
 		var stats_center = CenterContainer.new()
 		vbox.add_child(stats_center)
 		
@@ -119,7 +119,7 @@ func build_win_screen(is_speedrun: bool = false):
 		stats_container.add_theme_constant_override("separation", 15)
 		stats_center.add_child(stats_container)
 		
-		# create stat labels
+		# Create stat labels
 		var speed_label = create_stat_label("Speed", "1.0x")
 		speed_label.name = "SpeedLabel"
 		stats_container.add_child(speed_label)
@@ -136,12 +136,12 @@ func build_win_screen(is_speedrun: bool = false):
 		blocks_label.name = "BlocksLabel"
 		stats_container.add_child(blocks_label)
 	
-	# spacer
+	# Spacer
 	var spacer2 = Control.new()
 	spacer2.custom_minimum_size = Vector2(0, 30)
 	vbox.add_child(spacer2)
 	
-	# menu button
+	# Menu button
 	var menu_button = Button.new()
 	menu_button.text = "Return to Main Menu"
 	menu_button.custom_minimum_size = Vector2(300, 60)
@@ -169,12 +169,12 @@ func create_stat_label(stat_name: String, default_value: String) -> HBoxContaine
 	return hbox
 
 func display_stats(level_manager, is_speedrun: bool = false):
-	# check if any upgrades purchased
+	# Check if any upgrades were purchased
 	var used_upgrades = (level_manager.player_speed_multiplier != 1.0 or 
 						 level_manager.player_jump_multiplier != 1.0 or 
 						 level_manager.player_gravity_multiplier != 1.0)
 	
-	# update rounds label for speedrun 
+	# Update rounds label for speedrun category
 	if is_speedrun:
 		var rounds_label = find_node_recursive(self, "RoundsLabel")
 		if rounds_label:
@@ -183,11 +183,11 @@ func display_stats(level_manager, is_speedrun: bool = false):
 			else:
 				rounds_label.text = "chat is this a min% wr"
 	
-	# update challenge text
+	# Update challenge text
 	var challenge_label = find_node_recursive(self, "ChallengeLabel")
 	if challenge_label:
 		if is_speedrun:
-			# show speedrun time
+			# Show speedrun time
 			if has_node("/root/SpeedrunManager"):
 				var manager = get_node("/root/SpeedrunManager")
 				challenge_label.text = manager.format_time(manager.speedrun_time)
@@ -197,14 +197,14 @@ func display_stats(level_manager, is_speedrun: bool = false):
 			else:
 				challenge_label.text = "wow pro gaming"
 	
-	# only update stats if not speedrun
+	# Only update stats if NOT speedrun
 	if not is_speedrun:
-		# update rounds
+		# Update rounds
 		var rounds_label = get_node_or_null("CenterContainer/VBoxContainer/RoundsLabel")
 		if rounds_label:
 			rounds_label.text = "Completed " + str(level_manager.levels_completed) + " Rounds!"
 		
-		# update stats
+		# Update stats - search for nodes recursively
 		var speed_value = find_node_recursive(self, "SpeedLabel")
 		if speed_value:
 			var value_node = speed_value.get_node_or_null("Value")
@@ -229,15 +229,40 @@ func display_stats(level_manager, is_speedrun: bool = false):
 			if value_node:
 				value_node.text = str(level_manager.player_blocks)
 		
-		# unlock speedrun when beating normally
+		# Unlock speedrun mode when beating normally (not in speedrun)
 		if has_node("/root/SpeedrunManager"):
 			var speedrun_manager = get_node("/root/SpeedrunManager")
 			if not speedrun_manager.speedrun_unlocked:
 				speedrun_manager.unlock_speedrun()
+				# Show notification immediately on win screen
+				show_speedrun_unlock_notification()
 				print("✓ Unlocked speedrun mode for first completion!")
 	else:
-		# already completed in speedrun mode
+		# Already completed in speedrun mode
 		print("Completed in speedrun mode - speedrun already unlocked")
+
+func _on_menu_pressed():
+	# Unequip all items
+	var inventory_ui = get_node_or_null("/root/InventoryUI")
+	if inventory_ui:
+		inventory_ui.unequip_all_items()
+		print("✓ Unequipped all items before returning to menu")
+	
+	# Reset shop (clear upgrades and purchases)
+	var shop_ui = get_node_or_null("/root/ShopUI")
+	if shop_ui:
+		shop_ui.reset_shop()
+		print("✓ Reset shop upgrades before returning to menu")
+	
+	# Reset speedrun for next time
+	if has_node("/root/SpeedrunManager"):
+		get_node("/root/SpeedrunManager").stop_speedrun()
+	
+	# Reset game and go to main menu
+	var level_manager = get_node("/root/LevelManager")
+	if level_manager:
+		level_manager.reset_game()
+	get_tree().change_scene_to_file("res://mainmenu.tscn")
 
 func find_node_recursive(node: Node, node_name: String) -> Node:
 	if node.name == node_name:
@@ -248,25 +273,25 @@ func find_node_recursive(node: Node, node_name: String) -> Node:
 			return result
 	return null
 
-func _on_menu_pressed():
-	# unequip all items
-	var inventory_ui = get_node_or_null("/root/InventoryUI")
-	if inventory_ui:
-		inventory_ui.unequip_all_items()
-		print("✓ Unequipped all items before returning to menu")
+func show_speedrun_unlock_notification():
+	# Create a temporary label to show unlock message
+	var label = Label.new()
+	label.text = "SPEEDRUN MODE UNLOCKED!"
+	label.add_theme_font_size_override("font_size", 32)
+	label.add_theme_color_override("font_color", Color.GOLD)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.position = Vector2(get_viewport_rect().size.x / 2 - 200, 100)
 	
-	# reset shop (clear upgrades & purchases)
-	var shop_ui = get_node_or_null("/root/ShopUI")
-	if shop_ui:
-		shop_ui.reset_shop()
-		print("✓ Reset shop upgrades before returning to menu")
+	# Add shadow for visibility
+	label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	label.add_theme_constant_override("shadow_offset_x", 3)
+	label.add_theme_constant_override("shadow_offset_y", 3)
 	
-	# reset speedrun for next time
-	if has_node("/root/SpeedrunManager"):
-		get_node("/root/SpeedrunManager").stop_speedrun()
+	add_child(label)
 	
-	# reset game & go to main menu
-	var level_manager = get_node("/root/LevelManager")
-	if level_manager:
-		level_manager.reset_game()
-	get_tree().change_scene_to_file("res://mainmenu.tscn")
+	# Fade out and remove
+	var tween = create_tween()
+	tween.tween_property(label, "modulate:a", 0.0, 2.0).set_delay(2.0)
+	tween.tween_callback(label.queue_free)
+	
+	print("✓ Showing speedrun unlock notification on win screen!")
